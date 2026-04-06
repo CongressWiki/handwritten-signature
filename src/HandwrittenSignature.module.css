@@ -1,0 +1,65 @@
+@keyframes signature-letter-stroke {
+  0% {
+    stroke-dashoffset: 0;
+    stroke-opacity: 1;
+  }
+
+  88% {
+    stroke-opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: var(--signature-dash-length, 1.2);
+    stroke-opacity: 0;
+  }
+}
+
+.signature {
+  display: flex;
+  align-items: flex-end;
+  pointer-events: auto;
+  gap: 0;
+  color: inherit;
+}
+
+.spacePlaceholder,
+.missingGlyph {
+  display: inline-block;
+  margin-left: var(--signature-margin-left, 0px);
+  margin-right: var(--signature-margin-right, 0px);
+}
+
+.spacePlaceholder {
+  width: var(--signature-space-width, 0px);
+  height: var(--signature-letter-height, auto);
+}
+
+.missingGlyph {
+  width: var(--signature-missing-width, 0px);
+  height: var(--signature-letter-height, auto);
+}
+
+.glyphSvg {
+  display: inline-block;
+  overflow: visible;
+  width: var(--signature-svg-width, auto);
+  height: var(--signature-letter-height, auto);
+  margin-left: var(--signature-margin-left, 0px);
+  margin-right: var(--signature-margin-right, 0px);
+  transform: translateY(var(--signature-baseline-shift, 0px));
+}
+
+.signaturePath {
+  stroke-dasharray: var(--signature-dash-length, 1.2);
+  stroke-dashoffset: 0;
+  stroke-opacity: 1;
+  animation-name: signature-letter-stroke;
+  animation-duration: var(--signature-duration, 320ms);
+  animation-delay: var(--signature-delay, 0ms);
+  animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  animation-direction: reverse;
+  animation-fill-mode: both;
+  animation-iteration-count: 1;
+  animation-play-state: var(--signature-play-state, running);
+  will-change: stroke-dashoffset, stroke-opacity;
+}

@@ -1,0 +1,51 @@
+{
+  "name": "@congresswiki/handwritten-signature",
+  "version": "0.1.0",
+  "description": "Animated handwriting component for React using SVG stroke paths",
+  "packageManager": "yarn@4.12.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./glyphs": {
+      "import": "./dist/glyphs.js",
+      "types": "./dist/glyphs.d.ts"
+    },
+    "./layout": {
+      "import": "./dist/layout.js",
+      "types": "./dist/layout.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types.js",
+      "types": "./dist/types.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "yarn build"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.2.4",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CongressWiki/handwritten-signature.git"
+  },
+  "license": "UNLICENSED"
+}
