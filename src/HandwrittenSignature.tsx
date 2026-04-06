@@ -216,10 +216,9 @@ const HandwrittenSignature = ({
   return (
     <>
       <style
-        href={STYLE_ID}
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: CSS }}
-        precedence="hws"
+        suppressHydrationWarning
       />
       <div
         className={['hws-signature', className].filter(Boolean).join(' ')}
