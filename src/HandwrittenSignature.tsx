@@ -230,9 +230,13 @@ const buildGlyphElements = ({
       </svg>,
     );
 
-    cumulativeDelay +=
-      totalLetterDurationMs *
-      (1 - clampedTimelineOverlap * TIMING_OVERLAP_MULTIPLIER);
+    // For multi-stroke letters, don't overlap into the next letter — the strokes
+    // already have internal overlap, so the full duration must elapse before the
+    // next letter begins (with only a small overlap for natural flow).
+    const letterOverlap = isMultiStroke
+      ? 0.15
+      : clampedTimelineOverlap * TIMING_OVERLAP_MULTIPLIER;
+    cumulativeDelay += totalLetterDurationMs * (1 - letterOverlap);
   });
 
   return glyphElements;
