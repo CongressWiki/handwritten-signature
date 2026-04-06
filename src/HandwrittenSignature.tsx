@@ -216,10 +216,9 @@ const HandwrittenSignature = ({
   return (
     <>
       <style
-        id={STYLE_ID}
+        href={STYLE_ID}
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: CSS }}
-        // React 19 dedupes <style> by precedence+href in <head> during SSR
         precedence="hws"
       />
       <div
