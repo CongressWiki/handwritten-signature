@@ -1,14 +1,21 @@
 import type { GlyphDefinition } from './types';
 
 export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
+  // ─── Uppercase ────────────────────────────────────────────────
+  // Redrawn letters flow in natural cursive pen order: the stroke follows
+  // the direction your hand would move when signing, with no teleporting
+  // or backtracking. Multi-stroke letters (paths[]) animate sequentially.
+
   A: {
-    path: 'M14.9987 32.0003C20.8769 23.2406 40.7942 1.02295 44.6176 1.58265C48.4411 2.14235 25.4397 26.0685 19.6688 50.0398C28.2839 11.7157 5.83642 32.6888 1.46688 33.1804C4.63512 27.4831 32.8719 20.946 44.7496 24.6628',
+    // Cursive A: upstroke from bottom-left to peak, down-right, then crossbar sweep
+    path: 'M2 46C8 30 16 14 24 4C28 2 30 2 32 4C36 12 40 28 44 46C40 44 32 32 24 30C16 28 8 32 4 36',
     viewBoxWidth: 46,
     viewBoxHeight: 51,
   },
   B: {
-    path: 'M25.7369 6.82933C16.1889 19.6519 13.2127 26.1056 8.11585 37.5574C21.5374 6.58445 41.1497 1.82882 45.1601 3.92338C52.3423 8.2922 18.8269 29.8371 17.6306 27.2038C16.4343 24.5705 38.5178 23.6728 37.9785 29.4181C36.1831 44.0806 -7.20643 55.631 2.96733 40.4898C7.27648 33.1286 25.3502 33.1885 27.7453 35.702',
-    viewBoxWidth: 47,
+    // Cursive B: stem down from top, loop back up for upper bump, loop for lower bump
+    path: 'M8 4C6 14 4 28 2 44C6 36 14 20 20 10C28 2 38 2 40 8C42 14 32 22 20 26C30 24 42 26 40 34C38 42 24 48 10 44',
+    viewBoxWidth: 46,
     viewBoxHeight: 51,
   },
   C: {
@@ -17,8 +24,9 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   D: {
-    path: 'M26.5606 9.18304C16.6848 26.0062 3.378 46.7523 1.89258 45.5634C-3.1006 40.6888 26.7398 2.16864 41.7793 5.25978C51.1122 6.68653 19.6065 49.6651 9.26293 46.2174C4.62623 44.3152 20.0819 27.7895 31.6737 29.9295',
-    viewBoxWidth: 45,
+    // Cursive D: stem down from top, then curve back up and around
+    path: 'M22 4C16 16 8 32 2 46C6 44 14 40 22 34C34 24 42 14 40 8C38 2 30 2 22 6C16 10 10 20 8 30',
+    viewBoxWidth: 44,
     viewBoxHeight: 51,
   },
   E: {
@@ -27,8 +35,12 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   F: {
-    path: 'M3.99414 15.4999C18.0539 7.88344 40.9941 2.5 58.4941 4.49991C15.9941 5.5 23.4941 9 1.49414 47.4999C4.49414 33.5 3.99414 25.5 43.9941 22.9999',
-    viewBoxWidth: 60,
+    // Cursive F: two strokes — stem sweeps down, then crossbar
+    paths: [
+      'M6 4C18 2 36 2 52 4C38 4 28 6 18 12C12 20 6 34 4 46',
+      'M2 24C12 22 24 22 36 24',
+    ],
+    viewBoxWidth: 54,
     viewBoxHeight: 51,
   },
   G: {
@@ -37,13 +49,18 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   H: {
-    path: 'M35.957 3.99976C23.1235 22.025 18.442 31.2217 10.457 47.4998C26.957 5.99983 30.457 37.5 52.957 7.5C33.957 29.4998 32.957 37.6924 29.457 38.5C25.957 39.3076 0.957031 32.5 0.957031 29.4998C23.1446 22.8906 34.5662 20.6514 50.957 22.4998',
-    viewBoxWidth: 54,
+    // Cursive H: left stem down, curve up to crossbar height, over to right, stem down
+    path: 'M4 4C2 16 1 30 2 46C4 34 10 20 18 12C24 8 30 8 36 12C42 18 46 30 48 46',
+    viewBoxWidth: 50,
     viewBoxHeight: 51,
   },
   I: {
-    path: 'M16.7648 9.03851C21.8129 5.77875 25.3024 4.00811 47.421 2.22626C35.7012 1.49995 34.274 -0.0548382 21.4876 22.9726C8.70118 45.9999 13.2012 40 1.2832 48.9828C3.36519 44.9656 17.2012 40.4999 23.7334 42.0158',
-    viewBoxWidth: 49,
+    // Cursive I: two strokes — stem down with flourish, then top serif bar
+    paths: [
+      'M24 6C20 16 16 28 12 42C10 46 14 48 18 44',
+      'M10 6C18 4 28 4 38 6',
+    ],
+    viewBoxWidth: 44,
     viewBoxHeight: 51,
   },
   J: {
@@ -52,8 +69,9 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   K: {
-    path: 'M30.6585 5.69873C20.8873 19.471 15.4101 28.7219 5.65848 46.1987C22.4604 13.4133 39.6585 11.6987 53.1585 9.69873C64.6585 8.19873 51.1585 20.1987 51.1585 20.1987C80.6585 -7.30127 -1.22332 24.1987 1.15848 37.6987C2.39349 44.6987 37.1585 35.6987 37.1585 35.6987',
-    viewBoxWidth: 59,
+    // Cursive K: stem down, then from midpoint sweep up-right for arm, back and down-right for leg
+    path: 'M6 4C4 16 2 30 1 46C4 38 10 30 16 24C22 18 30 12 38 8C30 16 22 24 16 30C20 34 28 40 38 46',
+    viewBoxWidth: 42,
     viewBoxHeight: 51,
   },
   L: {
@@ -77,8 +95,9 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   P: {
-    path: 'M6.17969 47.4213C13.346 34.4334 17.26 27.7753 26.1804 13.4212C15.6807 22.9212 7.17969 26.4211 1.17969 30.4214C15.1797 10.4213 55.1797 -3.07861 50.1799 7.42125C45.1801 17.9211 24.6017 34.3749 19.6797 37.4214C7.56237 44.9214 28.6797 21.4214 35.1797 24.9213',
-    viewBoxWidth: 52,
+    // Cursive P: stem down from top, then curve back up and around for bump
+    path: 'M8 4C6 16 4 30 2 46C4 36 8 22 14 12C18 6 24 2 32 4C40 6 44 14 40 22C36 30 26 34 16 34',
+    viewBoxWidth: 46,
     viewBoxHeight: 51,
   },
   Q: {
@@ -87,8 +106,9 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   R: {
-    path: 'M12.0195 45.3685C19.1859 32.3806 23.0999 25.7226 32.0203 11.3685C21.5205 20.8685 5.01953 34.2139 1.01953 30.7139C6.01953 17.2138 71.5195 -7.28639 53.5188 13.7136C43.6613 25.2136 12.0195 41.7136 14.0195 38.2136C37.0871 17.3054 32.9838 44.188 46.7608 39.6997',
-    viewBoxWidth: 58,
+    // Cursive R: stem down from top, loop back up for bump, then sweep down-right for leg
+    path: 'M8 4C6 16 4 30 2 46C4 36 10 22 16 12C22 4 34 2 38 8C42 14 36 24 26 28C30 30 36 36 44 44',
+    viewBoxWidth: 48,
     viewBoxHeight: 51,
   },
   S: {
@@ -97,8 +117,12 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   T: {
-    path: 'M1.31836 20.8976C6.45115 13.0499 39.3184 2.39746 60.3184 4.8976C33.3184 4.8976 36.3184 8.89746 14.3184 46.8976',
-    viewBoxWidth: 62,
+    // Cursive T: two strokes — stem down first, then crossbar sweep
+    paths: [
+      'M28 4C24 14 20 26 16 40C14 44 12 48 14 48',
+      'M4 6C16 2 34 2 54 6',
+    ],
+    viewBoxWidth: 56,
     viewBoxHeight: 51,
   },
   U: {
@@ -117,8 +141,12 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   X: {
-    path: 'M39.293 8.5227C23.1329 20.8029 15.0268 30.1783 0.792969 47.5227C20.8836 24.5227 13.5352 35.0227 14.293 2.02271C13.7765 24.514 15.5889 33.6064 19.293 49.0227',
-    viewBoxWidth: 41,
+    // X: two strokes — first diagonal, then second crossing diagonal
+    paths: [
+      'M4 6C12 16 22 30 36 46',
+      'M36 6C26 18 16 30 4 46',
+    ],
+    viewBoxWidth: 40,
     viewBoxHeight: 51,
   },
   Y: {
@@ -131,6 +159,9 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxWidth: 55,
     viewBoxHeight: 51,
   },
+
+  // ─── Lowercase ────────────────────────────────────────────────
+
   a: {
     path: 'M5.99958 25C5.73591 21.1582 1.99899 25.5 1.49941 28C1.00013 30.5 7.65454 23.3545 7.65454 23.3545C3.5802 27.3691 3.29278 30.5313 4.09638 30.7478C5.08629 31.0263 12.2012 24.7466 12.2012 24.7466',
     viewBoxWidth: 13,
@@ -157,8 +188,12 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   f: {
-    path: 'M17.7207 13.1365C8.45405 23.5754 -1.22714 43.6967 2.45623 40.1666C6.13959 36.6365 12.1704 24.6314 8.13529 26.9287C6.46836 27.8777 12.1416 27.8273 15.3106 24.7416',
-    viewBoxWidth: 19,
+    // Lowercase f: two strokes — stem curves down, then crossbar
+    paths: [
+      'M16 10C12 6 8 8 6 14C4 20 2 30 1 40',
+      'M2 24C6 23 10 23 15 24',
+    ],
+    viewBoxWidth: 18,
     viewBoxHeight: 51,
   },
   g: {
@@ -182,8 +217,9 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   k: {
-    path: 'M15.7207 6.04492C9.81615 15.6875 6.702 20.8513 1.7832 29.2278C6.71346 22.5005 7.97044 24.3967 8.53371 25.0963C6.93134 22.6684 3.19642 26.693 4.13275 27.9568C5.06907 29.2205 9.96155 26.6057 13.3705 24.8444',
-    viewBoxWidth: 17,
+    // Lowercase k: stem down, then from mid-stem curve up-right and back down-right
+    path: 'M14 6C10 14 6 22 2 30C6 26 10 23 13 22C10 24 6 28 4 30C8 30 12 28 16 26',
+    viewBoxWidth: 18,
     viewBoxHeight: 51,
   },
   l: {
@@ -207,8 +243,9 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   p: {
-    path: 'M15.0664 22.3301C8.76943 32.3849 6.19117 36.8558 1.41211 45.0713C13.0127 25.9291 12.9105 23.9189 16.1863 22.9881C24.4611 20.4162 13.3535 31.3002 12.6334 25.7561',
-    viewBoxWidth: 20,
+    // Lowercase p: stem down with descender, then loop back up for bowl
+    path: 'M4 22C3 26 2 32 1 40C2 44 3 46 4 44C5 40 8 34 10 28C12 24 14 22 15 24C16 26 14 30 10 30C6 30 4 28 4 26',
+    viewBoxWidth: 18,
     viewBoxHeight: 51,
   },
   q: {
@@ -227,8 +264,12 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   t: {
-    path: 'M0.966797 16.3342C6.66806 14.1572 15.5438 14.1786 22.957 15.9795C12.1532 14.4252 15.852 9.92493 18.1685 5.96021C9.87226 17.3225 -0.709346 36.7351 1.78362 36.9101C3.40185 37.0413 9.39371 29.0376 13.8793 24.8435',
-    viewBoxWidth: 24,
+    // Lowercase t: two strokes — stem down, then crossbar
+    paths: [
+      'M12 6C8 14 4 24 2 34C1 38 2 38 4 36',
+      'M2 18C6 16 12 16 18 18',
+    ],
+    viewBoxWidth: 20,
     viewBoxHeight: 51,
   },
   u: {
@@ -247,7 +288,11 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxHeight: 51,
   },
   x: {
-    path: 'M0.835938 28.9592C3.16429 26.7004 4.72124 25.4641 8.51758 23.3816C4.59281 26.4933 3.0991 27.1789 3.76827 23.2859C3.43652 25.6778 3.28964 27.0239 3.54516 29.5011',
+    // Lowercase x: two crossing strokes
+    paths: [
+      'M1 23C3 25 5 27 9 30',
+      'M9 23C7 25 5 27 1 30',
+    ],
     viewBoxWidth: 10,
     viewBoxHeight: 51,
   },
@@ -261,6 +306,9 @@ export const SIGNATURE_GLYPHS: Record<string, GlyphDefinition> = {
     viewBoxWidth: 24,
     viewBoxHeight: 51,
   },
+
+  // ─── Symbols ──────────────────────────────────────────────────
+
   '.': {
     path: 'M3.5 29C3.5 29.8 2.7 30.4 2 30C1.3 29.6 1.5 28.4 2.3 28.2C3.1 28 3.5 28.6 3.5 29Z',
     viewBoxWidth: 5,

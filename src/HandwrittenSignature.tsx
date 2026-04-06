@@ -129,23 +129,83 @@ const buildGlyphElements = ({
     const svgWidthValue =
       (glyph.viewBoxWidth / glyph.viewBoxHeight) * normalizedLetterHeight ||
       normalizedLetterHeight;
-    const dashLengthValue = Math.max(
-      normalizedLetterHeight * 0.85,
-      (layout.dashLength ??
-        FALLBACK_GLYPH_LAYOUT.dashLength ??
-        normalizedLetterHeight * 2.2) * scale,
-    );
-    const dashLengthString = formatUnitless(dashLengthValue);
-    const normalizedDash =
-      dashLengthValue / Math.max(normalizedLetterHeight, 1);
-    const letterDurationMsRaw =
-      durationPerLetterMs *
-      (DURATION_BASE_OFFSET + normalizedDash * DURATION_DASH_MULTIPLIER);
-    const letterDurationMs = Math.max(
-      durationPerLetterMs * MIN_DURATION_MULTIPLIER,
-      letterDurationMsRaw,
-    );
-    const animationDelayMs = effectiveInitialDelayMs + cumulativeDelay;
+
+    // Determine stroke paths and their dash lengths
+    const strokePaths = glyph.paths ?? (glyph.path ? [glyph.path] : []);
+    const isMultiStroke = strokePaths.length > 1;
+
+    // For multi-stroke, use per-stroke dash lengths; for single, use the layout value
+    const fallbackDash =
+      layout.dashLength ??
+      FALLBACK_GLYPH_LAYOUT.dashLength ??
+      normalizedLetterHeight * 2.2;
+
+    const strokeDashLengths = isMultiStroke && layout.dashLengths
+      ? layout.dashLengths.map((d) =>
+          Math.max(normalizedLetterHeight * 0.85, d * scale),
+        )
+      : strokePaths.map(() =>
+          Math.max(normalizedLetterHeight * 0.85, fallbackDash * scale),
+        );
+
+    // Build path elements with sequential delays for multi-stroke
+    let strokeLocalDelay = 0;
+    let totalLetterDurationMs = 0;
+    const pathElements: ReactNode[] = [];
+
+    strokePaths.forEach((strokePath, strokeIdx) => {
+      const dashLengthValue = strokeDashLengths[strokeIdx] ?? strokeDashLengths[0];
+      const dashLengthString = formatUnitless(dashLengthValue);
+      const normalizedDash =
+        dashLengthValue / Math.max(normalizedLetterHeight, 1);
+      const strokeDurationMsRaw =
+        durationPerLetterMs *
+        (DURATION_BASE_OFFSET + normalizedDash * DURATION_DASH_MULTIPLIER);
+      const strokeDurationMs = Math.max(
+        durationPerLetterMs * MIN_DURATION_MULTIPLIER,
+        strokeDurationMsRaw,
+      );
+      const animationDelayMs =
+        effectiveInitialDelayMs + cumulativeDelay + strokeLocalDelay;
+
+      pathElements.push(
+        <path
+          key={`stroke-${strokeIdx}`}
+          d={strokePath}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+          className="hws-path"
+          style={
+            {
+              '--hws-dur': `${Math.round(strokeDurationMs)}ms`,
+              '--hws-delay': `${Math.round(animationDelayMs)}ms`,
+              '--hws-dash-length': dashLengthString,
+            } as CSSProperties
+          }
+        />,
+      );
+
+      // Next stroke starts after this one finishes (slight overlap for natural feel)
+      strokeLocalDelay += strokeDurationMs * (isMultiStroke ? 0.85 : 1);
+      totalLetterDurationMs = strokeLocalDelay;
+    });
+
+    // For single-stroke backward compat, use the original duration calculation
+    if (!isMultiStroke) {
+      const dashLengthValue = strokeDashLengths[0];
+      const normalizedDash =
+        dashLengthValue / Math.max(normalizedLetterHeight, 1);
+      const letterDurationMsRaw =
+        durationPerLetterMs *
+        (DURATION_BASE_OFFSET + normalizedDash * DURATION_DASH_MULTIPLIER);
+      totalLetterDurationMs = Math.max(
+        durationPerLetterMs * MIN_DURATION_MULTIPLIER,
+        letterDurationMsRaw,
+      );
+    }
 
     glyphElements.push(
       <svg
@@ -165,27 +225,12 @@ const buildGlyphElements = ({
         }
         aria-hidden="true"
       >
-        <path
-          d={glyph.path}
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-          className="hws-path"
-          style={
-            {
-              '--hws-dur': `${Math.round(letterDurationMs)}ms`,
-              '--hws-delay': `${Math.round(animationDelayMs)}ms`,
-              '--hws-dash-length': dashLengthString,
-            } as CSSProperties
-          }
-        />
+        {pathElements}
       </svg>,
     );
 
     cumulativeDelay +=
-      letterDurationMs *
+      totalLetterDurationMs *
       (1 - clampedTimelineOverlap * TIMING_OVERLAP_MULTIPLIER);
   });
 
