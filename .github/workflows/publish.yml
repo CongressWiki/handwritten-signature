@@ -12,6 +12,8 @@ jobs:
     permissions:
       contents: write
       packages: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -25,8 +27,6 @@ jobs:
         with:
           node-version: 22
           registry-url: https://npm.pkg.github.com
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - run: yarn install --immutable
 
