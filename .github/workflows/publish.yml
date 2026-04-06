@@ -25,12 +25,8 @@ jobs:
         with:
           node-version: 22
           registry-url: https://npm.pkg.github.com
-
-      - name: Configure Yarn for GitHub Packages auth
-        run: |
-          yarn config set npmScopes.congresswiki.npmRegistryServer "https://npm.pkg.github.com"
-          yarn config set npmScopes.congresswiki.npmAlwaysAuth true
-          yarn config set npmScopes.congresswiki.npmAuthToken "${{ secrets.GITHUB_TOKEN }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - run: yarn install --immutable
 
