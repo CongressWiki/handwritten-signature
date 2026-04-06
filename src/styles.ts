@@ -1,19 +1,19 @@
+const STYLE_ID = 'hws-styles';
+
+const CSS = `
 @keyframes hws-letter-stroke {
   0% {
     stroke-dashoffset: 0;
     stroke-opacity: 1;
   }
-
   88% {
     stroke-opacity: 1;
   }
-
   100% {
     stroke-dashoffset: var(--hws-dash-length, 1.2);
     stroke-opacity: 0;
   }
 }
-
 .hws-signature {
   display: flex;
   align-items: flex-end;
@@ -21,24 +21,20 @@
   gap: 0;
   color: inherit;
 }
-
 .hws-space,
 .hws-missing {
   display: inline-block;
   margin-left: var(--hws-ml, 0px);
   margin-right: var(--hws-mr, 0px);
 }
-
 .hws-space {
   width: var(--hws-space-w, 0px);
   height: var(--hws-h, auto);
 }
-
 .hws-missing {
   width: var(--hws-missing-w, 0px);
   height: var(--hws-h, auto);
 }
-
 .hws-glyph {
   display: inline-block;
   overflow: visible;
@@ -48,7 +44,6 @@
   margin-right: var(--hws-mr, 0px);
   transform: translateY(var(--hws-bl, 0px));
 }
-
 .hws-path {
   stroke-dasharray: var(--hws-dash-length, 1.2);
   stroke-dashoffset: 0;
@@ -62,4 +57,20 @@
   animation-iteration-count: 1;
   animation-play-state: var(--hws-play, running);
   will-change: stroke-dashoffset, stroke-opacity;
-}
+}`;
+
+let injected = false;
+
+export const injectStyles = () => {
+  if (injected) return;
+  if (typeof document === 'undefined') return;
+  if (document.getElementById(STYLE_ID)) {
+    injected = true;
+    return;
+  }
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  style.textContent = CSS;
+  document.head.appendChild(style);
+  injected = true;
+};

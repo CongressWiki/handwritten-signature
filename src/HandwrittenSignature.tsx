@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { HandwrittenSignatureProps } from './types';
 import { SIGNATURE_GLYPHS } from './glyphs';
+import { injectStyles } from './styles';
 import {
   CODEPEN_BASE_LETTER_HEIGHT,
   DEFAULT_INITIAL_DELAY_MS,
@@ -202,6 +203,8 @@ const HandwrittenSignature = ({
   className,
   ...delegated
 }: HandwrittenSignatureProps) => {
+  injectStyles();
+
   const glyphElements = buildGlyphElements({
     text,
     letterSpacing,
