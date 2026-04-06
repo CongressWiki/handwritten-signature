@@ -1,6 +1,6 @@
-const STYLE_ID = 'hws-styles';
+export const STYLE_ID = 'hws-styles';
 
-const CSS = `
+export const CSS = `
 @keyframes hws-letter-stroke {
   0% {
     stroke-dashoffset: 0;
@@ -58,19 +58,3 @@ const CSS = `
   animation-play-state: var(--hws-play, running);
   will-change: stroke-dashoffset, stroke-opacity;
 }`;
-
-let injected = false;
-
-export const injectStyles = () => {
-  if (injected) return;
-  if (typeof document === 'undefined') return;
-  if (document.getElementById(STYLE_ID)) {
-    injected = true;
-    return;
-  }
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = CSS;
-  document.head.appendChild(style);
-  injected = true;
-};
