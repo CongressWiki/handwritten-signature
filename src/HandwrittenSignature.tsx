@@ -189,8 +189,9 @@ const buildGlyphElements = ({
       );
 
       // Next stroke starts after this one finishes (slight overlap for natural feel)
+      const strokeEndMs = strokeLocalDelay + strokeDurationMs;
       strokeLocalDelay += strokeDurationMs * (isMultiStroke ? 0.85 : 1);
-      totalLetterDurationMs = strokeLocalDelay;
+      totalLetterDurationMs = strokeEndMs;
     });
 
     // For single-stroke backward compat, use the original duration calculation
