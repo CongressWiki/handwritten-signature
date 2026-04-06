@@ -1,0 +1,173 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  publish:
+    # Skip CI-generated version bump commits
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable Corepack (Yarn 4)
+        run: corepack enable
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+
+      - name: Configure Yarn for GitHub Packages auth
+        run: |
+          yarn config set npmScopes.congresswiki.npmRegistryServer "https://npm.pkg.github.com"
+          yarn config set npmScopes.congresswiki.npmAlwaysAuth true
+          yarn config set npmScopes.congresswiki.npmAuthToken "${{ secrets.GITHUB_TOKEN }}"
+
+      - run: yarn install --immutable
+
+      - run: yarn build
+
+      - run: yarn typecheck
+
+      # Determine version bump type using AI analysis of changes
+      - name: Determine version bump type
+        id: version
+        env:
+          AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+          # Check if this version is already published using yarn npm info
+          if yarn npm info "@congresswiki/handwritten-signature@${CURRENT_VERSION}" --fields version 2>/dev/null | grep -q "${CURRENT_VERSION}"; then
+            echo "Version ${CURRENT_VERSION} already published — analyzing changes..."
+          else
+            echo "Version ${CURRENT_VERSION} not yet published — publishing as-is"
+            echo "bump=none" >> "$GITHUB_OUTPUT"
+            echo "version=${CURRENT_VERSION}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Version ${CURRENT_VERSION} already published — analyzing changes..."
+
+          # Find the last version tag or use the commit that set this version
+          LAST_TAG=$(git tag -l "v*" --sort=-v:refname | head -1 || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            DIFF_BASE="$LAST_TAG"
+          else
+            # No tags — diff against the commit that last changed package.json version
+            DIFF_BASE=$(git log --format=%H -1 --diff-filter=M -- package.json HEAD~1 2>/dev/null || echo "HEAD~5")
+          fi
+
+          # Get commit messages and diff summary since last version
+          COMMITS=$(git log "${DIFF_BASE}..HEAD" --pretty=format:"- %s" 2>/dev/null | head -30)
+          DIFF_STAT=$(git diff "${DIFF_BASE}..HEAD" --stat 2>/dev/null | tail -5)
+          DIFF_NAMES=$(git diff "${DIFF_BASE}..HEAD" --name-only 2>/dev/null | head -30)
+
+          # If no AI key, fall back to patch
+          if [ -z "$AI_GATEWAY_API_KEY" ]; then
+            echo "No AI_GATEWAY_API_KEY — defaulting to patch"
+            echo "bump=patch" >> "$GITHUB_OUTPUT"
+            NEW_VERSION=$(node -e "const [a,b,c]='${CURRENT_VERSION}'.split('.').map(Number);console.log(a+'.'+ b+'.'+(c+1))")
+            echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Ask AI to classify the version bump type
+          PROMPT="You are a semver versioning assistant for an npm package called @congresswiki/handwritten-signature.
+          This is a private shared library that provides an animated handwriting component for React using SVG stroke paths.
+          It exports glyphs, layout utilities, and type definitions.
+
+          Analyze these changes and respond with ONLY one word: patch, minor, or major.
+
+          Rules:
+          - patch: bug fixes, typo fixes, dependency updates, internal refactors with no API changes
+          - minor: new features, new exports, new optional parameters, non-breaking additions (e.g. new glyphs)
+          - major: breaking changes to existing exports, removed exports, changed function signatures, renamed types
+
+          Commits since last release:
+          ${COMMITS}
+
+          Files changed:
+          ${DIFF_NAMES}
+
+          Diff summary:
+          ${DIFF_STAT}"
+
+          # Call Vercel AI Gateway (OpenAI-compatible format)
+          RESPONSE=$(curl -s -X POST "https://ai-gateway.vercel.sh/v3/ai/chat/completions" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${AI_GATEWAY_API_KEY}" \
+            -d "$(jq -n --arg prompt "$PROMPT" '{
+              "model": "anthropic/claude-haiku-4-5-20251001",
+              "max_tokens": 10,
+              "messages": [{"role": "user", "content": $prompt}]
+            }')" 2>/dev/null)
+
+          BUMP_TYPE=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "patch"' | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')
+
+          # Validate response
+          if [[ "$BUMP_TYPE" != "patch" && "$BUMP_TYPE" != "minor" && "$BUMP_TYPE" != "major" ]]; then
+            echo "AI returned unexpected value '${BUMP_TYPE}' — defaulting to patch"
+            BUMP_TYPE="patch"
+          fi
+
+          echo "AI determined bump type: ${BUMP_TYPE}"
+          echo "bump=${BUMP_TYPE}" >> "$GITHUB_OUTPUT"
+
+          # Calculate new version
+          NEW_VERSION=$(node -e "
+            const [major, minor, patch] = '${CURRENT_VERSION}'.split('.').map(Number);
+            const type = '${BUMP_TYPE}';
+            if (type === 'major') console.log((major+1) + '.0.0');
+            else if (type === 'minor') console.log(major + '.' + (minor+1) + '.0');
+            else console.log(major + '.' + minor + '.' + (patch+1));
+          ")
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      # Bump version if needed, publish, commit back
+      - name: Publish
+        run: |
+          BUMP="${{ steps.version.outputs.bump }}"
+          NEW_VERSION="${{ steps.version.outputs.version }}"
+
+          if [ "$BUMP" = "none" ]; then
+            echo "Publishing current version as-is..."
+            yarn npm publish
+            echo "Published ${NEW_VERSION}"
+          else
+            echo "Bumping ${BUMP} → ${NEW_VERSION}"
+
+            # Update package.json
+            node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+              pkg.version = '${NEW_VERSION}';
+              fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            "
+
+            # Rebuild with new version
+            yarn build
+
+            # Publish
+            yarn npm publish
+            echo "Published ${NEW_VERSION}"
+
+            # Tag and commit back to main
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package.json
+            git commit -m "v${NEW_VERSION} [skip ci]"
+            git tag "v${NEW_VERSION}"
+            git push
+            git push --tags
+          fi
