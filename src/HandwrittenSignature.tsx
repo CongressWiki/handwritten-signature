@@ -17,7 +17,6 @@ import {
   TIMING_OVERLAP_MULTIPLIER,
   UPPERCASE_GLYPH_LAYOUT,
 } from './layout';
-import styles from './HandwrittenSignature.module.css';
 
 interface BuildGlyphOptions {
   text: string | undefined;
@@ -74,12 +73,12 @@ const buildGlyphElements = ({
       glyphElements.push(
         <span
           key={`space-${index}`}
-          className={styles.spacePlaceholder}
+          className="hws-space"
           style={
             {
-              '--signature-space-width': spaceWidthPx,
-              '--signature-margin-left': formatPx(0),
-              '--signature-margin-right': formatPx(spaceMarginRight),
+              '--hws-space-w': spaceWidthPx,
+              '--hws-ml': formatPx(0),
+              '--hws-mr': formatPx(spaceMarginRight),
             } as CSSProperties
           }
         />,
@@ -110,13 +109,13 @@ const buildGlyphElements = ({
       glyphElements.push(
         <span
           key={`missing-${index}`}
-          className={styles.missingGlyph}
+          className="hws-missing"
           style={
             {
-              '--signature-missing-width': missingGlyphWidthPx,
-              '--signature-letter-height': letterHeightPx,
-              '--signature-margin-left': formatPx(marginLeftValue),
-              '--signature-margin-right': formatPx(marginRightValue),
+              '--hws-missing-w': missingGlyphWidthPx,
+              '--hws-h': letterHeightPx,
+              '--hws-ml': formatPx(marginLeftValue),
+              '--hws-mr': formatPx(marginRightValue),
             } as CSSProperties
           }
         />,
@@ -151,16 +150,16 @@ const buildGlyphElements = ({
       <svg
         key={`glyph-${index}-${char}`}
         viewBox={`0 0 ${glyph.viewBoxWidth} ${glyph.viewBoxHeight}`}
-        className={styles.glyphSvg}
+        className="hws-glyph"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={
           {
-            '--signature-svg-width': formatPx(svgWidthValue),
-            '--signature-letter-height': letterHeightPx,
-            '--signature-margin-left': formatPx(marginLeftValue),
-            '--signature-margin-right': formatPx(marginRightValue),
-            '--signature-baseline-shift': formatPx(baselineShiftValue),
+            '--hws-svg-w': formatPx(svgWidthValue),
+            '--hws-h': letterHeightPx,
+            '--hws-ml': formatPx(marginLeftValue),
+            '--hws-mr': formatPx(marginRightValue),
+            '--hws-bl': formatPx(baselineShiftValue),
           } as CSSProperties
         }
         aria-hidden="true"
@@ -172,12 +171,12 @@ const buildGlyphElements = ({
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
-          className={styles.signaturePath}
+          className="hws-path"
           style={
             {
-              '--signature-duration': `${Math.round(letterDurationMs)}ms`,
-              '--signature-delay': `${Math.round(animationDelayMs)}ms`,
-              '--signature-dash-length': dashLengthString,
+              '--hws-dur': `${Math.round(letterDurationMs)}ms`,
+              '--hws-delay': `${Math.round(animationDelayMs)}ms`,
+              '--hws-dash-length': dashLengthString,
             } as CSSProperties
           }
         />
@@ -215,7 +214,7 @@ const HandwrittenSignature = ({
 
   return (
     <div
-      className={[styles.signature, className].filter(Boolean).join(' ')}
+      className={['hws-signature', className].filter(Boolean).join(' ')}
       {...delegated}
     >
       {glyphElements}
