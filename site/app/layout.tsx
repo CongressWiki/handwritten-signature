@@ -1,9 +1,40 @@
 import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
 
+const SITE_URL = 'https://congresswiki.github.io/handwritten-signature';
+
 export const metadata: Metadata = {
-  title: 'Handwritten Signature',
-  description: 'Animated cursive SVG signature component for React',
+  metadataBase: new URL(SITE_URL),
+  title: 'Handwritten Signature — Animated SVG Signatures for React',
+  description:
+    'Render text as animated cursive SVG stroke paths. Each letter draws on sequentially with configurable timing, easing, tempo variation, and pressure simulation.',
+  keywords: [
+    'handwritten signature',
+    'svg animation',
+    'react component',
+    'cursive text',
+    'stroke animation',
+    'handwriting effect',
+  ],
+  authors: [{ name: 'Congress.wiki', url: 'https://congress.wiki' }],
+  openGraph: {
+    title: 'Handwritten Signature',
+    description:
+      'Animated cursive SVG signature component for React — configurable timing, easing, tempo, and pressure.',
+    url: SITE_URL,
+    siteName: 'Handwritten Signature',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Handwritten Signature',
+    description:
+      'Animated cursive SVG signature component for React — configurable timing, easing, tempo, and pressure.',
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
 };
 
 export default function RootLayout({

@@ -72,9 +72,13 @@ Single React component (`HandwrittenSignature`) with four entry points:
 2. Add layout config to the appropriate map in `layout.ts` (`UPPERCASE_GLYPH_LAYOUT`, `LOWERCASE_GLYPH_LAYOUT`, or `SYMBOL_GLYPH_LAYOUT`)
 3. Measure `dashLength` via `getTotalLength()` on each path and pad 30%
 
+### Styles (`styles.ts`)
+
+Contains the injected CSS: keyframe animation `hws-letter-stroke`, glyph/space/missing layout classes, and the `--hws-play` CSS variable that allows external control of animation play state (used by the demo site's `useAnimationControl` hook via the Web Animations API).
+
 ### Demo Site (`site/`)
 
-Next.js 15 static site with a single page:
+Next.js 16 static site with a single page:
 
 - **`page.tsx`**: Playground with text input, signature preview, transport bar (play/pause/seek/speed), collapsible controls panel (easing curve editor, style presets, sliders), draggable/reorderable examples, glyph test grids
 - **`transport.tsx`**: Shared animation control hook (`useAnimationControl`) using the Web Animations API, transport bar component, easing curve editor (canvas-based cubic-bezier editor with draggable handles), signature style presets

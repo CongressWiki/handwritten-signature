@@ -27,6 +27,8 @@ interface ExampleItem {
   builtin?: boolean;
 }
 
+type GlyphViewMode = 'presets' | 'names' | 'alphabet' | 'pairs';
+
 const DEFAULT_EXAMPLES: ExampleItem[] = [
   { id: 'e1', text: 'Signature', builtin: true },
   { id: 'e2', text: 'Nancy Pelosi', builtin: true },
@@ -529,20 +531,35 @@ export default function PlaygroundPage() {
             {/* Header row */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontSize: 14, fontWeight: 600 }}>Timing</div>
-              <button
-                onClick={() => { setLooping((l) => !l); if (!looping) replay(); }}
-                style={{
-                  padding: '5px 14px', fontSize: 12, fontFamily: 'var(--font)',
-                  border: '1px solid',
-                  borderColor: looping ? 'var(--accent)' : 'var(--border)',
-                  borderRadius: 20,
-                  background: looping ? 'var(--accent)' : 'var(--surface)',
-                  color: looping ? '#fff' : 'var(--text-secondary)',
-                  cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >
-                {looping ? '⟳ Looping' : '⟳ Loop'}
-              </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={resetAll}
+                  style={{
+                    padding: '5px 14px', fontSize: 12, fontFamily: 'var(--font)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 20,
+                    background: 'var(--surface)',
+                    color: 'var(--text-tertiary)',
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={() => { setLooping((l) => !l); if (!looping) replay(); }}
+                  style={{
+                    padding: '5px 14px', fontSize: 12, fontFamily: 'var(--font)',
+                    border: '1px solid',
+                    borderColor: looping ? 'var(--accent)' : 'var(--border)',
+                    borderRadius: 20,
+                    background: looping ? 'var(--accent)' : 'var(--surface)',
+                    color: looping ? '#fff' : 'var(--text-secondary)',
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >
+                  {looping ? '⟳ Looping' : '⟳ Loop'}
+                </button>
+              </div>
             </div>
 
             {/* Signature style presets */}
@@ -948,8 +965,6 @@ function InstallBlock({
 }
 
 // ── Glyph Test ──────────────────────────────────────────────────────
-
-type GlyphViewMode = 'presets' | 'names' | 'alphabet' | 'pairs';
 
 const TEST_NAMES = [
   'Adam Schiff', 'Alexandria Ocasio-Cortez', 'Barbara Boxer', 'Byron Donalds',
