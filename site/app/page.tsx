@@ -308,29 +308,76 @@ function InlineCurveEditor({
 // ── Page ────────────────────────────────────────────────────────────
 
 export default function PlaygroundPage() {
-  const [text, setText] = useState('');
-  const [inputText, setInputText] = useState('');
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-  const [letterHeight, setLetterHeight] = useState(68);
-  const [letterSpacing, setLetterSpacing] = useState(0);
-  const [durationPerLetterMs, setDurationPerLetterMs] = useState(320);
-  const [initialDelayMs, setInitialDelayMs] = useState(300);
-  const [strokeWidth, setStrokeWidth] = useState(2);
-  const [overlapRatio, setOverlapRatio] = useState(0.58);
-  const [color, setColor] = useState('#1a1a2e');
   const defaultPreset = SIGNATURE_PRESETS[0]; // Natural
-  const [tempoVariation, setTempoVariation] = useState(defaultPreset.tempo);
-  const [pressureVariation, setPressureVariation] = useState(defaultPreset.pressure);
+
+  // Load saved state once on mount
+  const [saved] = useState(() => loadSavedState());
+
+  const [text, setText] = useState(saved?.text ?? '');
+  const [inputText, setInputText] = useState(saved?.text ?? '');
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const [letterHeight, setLetterHeight] = useState(saved?.letterHeight ?? 68);
+  const [letterSpacing, setLetterSpacing] = useState(saved?.letterSpacing ?? 0);
+  const [durationPerLetterMs, setDurationPerLetterMs] = useState(saved?.durationPerLetterMs ?? 320);
+  const [initialDelayMs, setInitialDelayMs] = useState(saved?.initialDelayMs ?? 300);
+  const [strokeWidth, setStrokeWidth] = useState(saved?.strokeWidth ?? 2);
+  const [overlapRatio, setOverlapRatio] = useState(saved?.overlapRatio ?? 0.58);
+  const [color, setColor] = useState(saved?.color ?? '#1a1a2e');
+  const [tempoVariation, setTempoVariation] = useState(saved?.tempoVariation ?? defaultPreset.tempo);
+  const [pressureVariation, setPressureVariation] = useState(saved?.pressureVariation ?? defaultPreset.pressure);
   const [animKey, setAnimKey] = useState(0);
-  const [looping, setLooping] = useState(false);
-  const [curve, setCurve] = useState<CurveState>(() => curveFromBezier(defaultPreset.easing));
-  const [glyphView, setGlyphView] = useState<GlyphViewMode>('presets');
-  const [examples, setExamples] = useState<ExampleItem[]>(DEFAULT_EXAMPLES);
+  const [looping, setLooping] = useState(saved?.looping ?? false);
+  const [curve, setCurve] = useState<CurveState>(() => saved?.curve ?? curveFromBezier(defaultPreset.easing));
+  const [glyphView, setGlyphView] = useState<GlyphViewMode>(saved?.glyphView ?? 'presets');
+  const [examples, setExamples] = useState<ExampleItem[]>(saved?.examples ?? DEFAULT_EXAMPLES);
+  const [pkgMgr, setPkgMgr] = useState<'npm' | 'yarn' | 'pnpm'>(saved?.pkgMgr ?? 'npm');
   const nextIdRef = useRef(100);
 
   const playgroundRef = useRef<HTMLDivElement>(null);
   const examplesRef = useRef<HTMLDivElement>(null);
   const replay = useCallback(() => setAnimKey((k) => k + 1), []);
+
+  // Show toast if state was restored
+  useEffect(() => {
+    if (saved) {
+      toast.success('Settings restored from last session');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-save to localStorage on state changes
+  useEffect(() => {
+    saveState({
+      text, letterHeight, letterSpacing, durationPerLetterMs, initialDelayMs,
+      strokeWidth, overlapRatio, color, tempoVariation, pressureVariation,
+      curve, looping, glyphView, examples, pkgMgr,
+    });
+  }, [text, letterHeight, letterSpacing, durationPerLetterMs, initialDelayMs,
+      strokeWidth, overlapRatio, color, tempoVariation, pressureVariation,
+      curve, looping, glyphView, examples, pkgMgr]);
+
+  const resetAll = useCallback(() => {
+    const dp = SIGNATURE_PRESETS[0];
+    clearSavedState();
+    setText('');
+    setInputText('');
+    setLetterHeight(68);
+    setLetterSpacing(0);
+    setDurationPerLetterMs(320);
+    setInitialDelayMs(300);
+    setStrokeWidth(2);
+    setOverlapRatio(0.58);
+    setColor('#1a1a2e');
+    setTempoVariation(dp.tempo);
+    setPressureVariation(dp.pressure);
+    setLooping(false);
+    setCurve(curveFromBezier(dp.easing));
+    setGlyphView('presets');
+    setExamples(DEFAULT_EXAMPLES);
+    setPkgMgr('npm');
+    replay();
+    toast.success('Reset to defaults');
+  }, [replay]);
 
   const playgroundCtrl = useAnimationControl(playgroundRef, animKey);
   const examplesCtrl = useAnimationControl(examplesRef, animKey);
@@ -371,7 +418,6 @@ export default function PlaygroundPage() {
   }, [looping, replay]);
 
   const label = curveLabel(curve);
-  const [pkgMgr, setPkgMgr] = useState<'npm' | 'yarn' | 'pnpm'>('npm');
 
   return (
     <div style={{ paddingTop: 40 }}>
