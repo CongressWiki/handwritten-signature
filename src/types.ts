@@ -28,4 +28,15 @@ export interface HandwrittenSignatureProps
   initialDelayMs?: number;
   strokeWidth?: number;
   overlapRatio?: number;
+  /** CSS timing function for each glyph's stroke animation.
+   *  Default: 'cubic-bezier(0.33, 1, 0.68, 1)' (ease-out) */
+  easing?: string;
+  /** Writing speed variation across the signature (0–1).
+   *  0 = constant speed, higher = more natural slow-fast-slow pacing.
+   *  Default: 0 */
+  tempoVariation?: number;
+  /** Stroke width variation across the signature simulating pen pressure (0–1).
+   *  0 = uniform width, higher = more variation (thicker in middle, thinner at edges).
+   *  Default: 0 */
+  pressureVariation?: number;
 }

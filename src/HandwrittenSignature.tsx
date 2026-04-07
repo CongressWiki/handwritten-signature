@@ -27,6 +27,8 @@ interface BuildGlyphOptions {
   initialDelayMs: number;
   overlapRatio: number;
   strokeWidth: number;
+  tempoVariation: number;
+  pressureVariation: number;
 }
 
 const formatPx = (value: number) => `${value.toFixed(2)}px`;
@@ -41,6 +43,8 @@ const buildGlyphElements = ({
   initialDelayMs,
   overlapRatio,
   strokeWidth,
+  tempoVariation,
+  pressureVariation,
 }: BuildGlyphOptions): ReactNode[] => {
   const normalizedText = text?.trim().length ? text : FALLBACK_TEXT;
   const characters = Array.from(normalizedText);
@@ -62,6 +66,26 @@ const buildGlyphElements = ({
   const requestedOverlap = overlapRatio ?? 0.58;
   const clampedTimelineOverlap = Math.max(0, Math.min(requestedOverlap, 0.9));
   const effectiveInitialDelayMs = Math.max(initialDelayMs, 0);
+
+  // Per-word glyph positions for tempo/pressure (each word gets its own curve)
+  const words = normalizedText.split(' ');
+  const wordGlyphCounts = words.map((w) => Array.from(w).length);
+  // Map each character index to its [wordGlyphCount, indexWithinWord]
+  let wordIdx = 0;
+  let charInWord = 0;
+  const glyphWordPosition: Array<{ count: number; index: number }> = [];
+  for (const char of characters) {
+    if (char === ' ') {
+      glyphWordPosition.push({ count: 0, index: 0 }); // placeholder for space
+      wordIdx++;
+      charInWord = 0;
+    } else {
+      glyphWordPosition.push({ count: wordGlyphCounts[wordIdx], index: charInWord });
+      charInWord++;
+    }
+  }
+  const clampedTempo = Math.max(0, Math.min(tempoVariation, 1));
+  const clampedPressure = Math.max(0, Math.min(pressureVariation, 1));
 
   let cumulativeDelay = 0;
 
@@ -126,6 +150,19 @@ const buildGlyphElements = ({
       return;
     }
 
+    // Position of this glyph within its word (0 to 1) for per-word rhythm
+    const wp = glyphWordPosition[index];
+    const glyphPosition = wp.count > 1 ? wp.index / (wp.count - 1) : 0.5;
+
+    // Pressure: vary stroke width based on position. Peak slightly past center.
+    // sin curve: thinner at start/end, thicker in the middle.
+    const pressureCurve = Math.sin(Math.PI * (glyphPosition * 0.85 + 0.075));
+    const pressuredStrokeWidth = Math.round(strokeWidth * (1 + clampedPressure * (pressureCurve - 0.5) * 0.5) * 100) / 100;
+
+    // Tempo: velocity multiplier — higher = faster writing = shorter gaps
+    // sin curve: slower at start/end, faster in the middle.
+    const tempoMultiplier = 1 + clampedTempo * Math.sin(Math.PI * glyphPosition) * 1.2;
+
     const svgWidthValue =
       (glyph.viewBoxWidth / glyph.viewBoxHeight) * normalizedLetterHeight ||
       normalizedLetterHeight;
@@ -173,7 +210,7 @@ const buildGlyphElements = ({
           key={`stroke-${strokeIdx}`}
           d={strokePath}
           stroke="currentColor"
-          strokeWidth={strokeWidth}
+          strokeWidth={pressuredStrokeWidth}
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
@@ -232,12 +269,13 @@ const buildGlyphElements = ({
 
     // For multi-stroke letters, the next letter must wait for ALL strokes to
     // finish. Single-stroke letters use overlap for natural flow.
+    // Tempo variation: divide gap by tempoMultiplier (faster = shorter gaps).
     if (isMultiStroke) {
-      cumulativeDelay += totalLetterDurationMs;
+      cumulativeDelay += totalLetterDurationMs / tempoMultiplier;
     } else {
       cumulativeDelay +=
-        totalLetterDurationMs *
-        (1 - clampedTimelineOverlap * TIMING_OVERLAP_MULTIPLIER);
+        (totalLetterDurationMs *
+        (1 - clampedTimelineOverlap * TIMING_OVERLAP_MULTIPLIER)) / tempoMultiplier;
     }
   });
 
@@ -252,7 +290,11 @@ const HandwrittenSignature = ({
   initialDelayMs = DEFAULT_INITIAL_DELAY_MS,
   strokeWidth = 2,
   overlapRatio = 0.58,
+  easing,
+  tempoVariation = 0,
+  pressureVariation = 0,
   className,
+  style,
   ...delegated
 }: HandwrittenSignatureProps) => {
   const glyphElements = buildGlyphElements({
@@ -263,7 +305,14 @@ const HandwrittenSignature = ({
     initialDelayMs,
     overlapRatio,
     strokeWidth,
+    tempoVariation,
+    pressureVariation,
   });
+
+  // Merge easing CSS variable into the style prop
+  const mergedStyle = easing
+    ? { ...style, '--hws-easing': easing } as CSSProperties
+    : style;
 
   return (
     <>
@@ -274,6 +323,7 @@ const HandwrittenSignature = ({
       />
       <div
         className={['hws-signature', className].filter(Boolean).join(' ')}
+        style={mergedStyle}
         {...delegated}
       >
         {glyphElements}

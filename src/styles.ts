@@ -51,7 +51,7 @@ export const CSS = `
   animation-name: hws-letter-stroke;
   animation-duration: var(--hws-dur, 320ms);
   animation-delay: var(--hws-delay, 0ms);
-  animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  animation-timing-function: var(--hws-easing, cubic-bezier(0.33, 1, 0.68, 1));
   animation-direction: reverse;
   animation-fill-mode: both;
   animation-iteration-count: 1;
