@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 import HandwrittenSignature from '../../src/HandwrittenSignature';
 import {
   useAnimationControl,
@@ -35,6 +36,54 @@ const DEFAULT_EXAMPLES: ExampleItem[] = [
   { id: 'e6', text: 'Jane Smith', builtin: true },
   { id: 'e7', text: 'Thomas Jeb Hensarling', builtin: true },
 ];
+
+// ── LocalStorage persistence ────────────────────────────────────────
+
+const STORAGE_KEY = 'hws-playground-state';
+
+interface SavedState {
+  text: string;
+  letterHeight: number;
+  letterSpacing: number;
+  durationPerLetterMs: number;
+  initialDelayMs: number;
+  strokeWidth: number;
+  overlapRatio: number;
+  color: string;
+  tempoVariation: number;
+  pressureVariation: number;
+  curve: CurveState;
+  looping: boolean;
+  glyphView: GlyphViewMode;
+  examples: ExampleItem[];
+  pkgMgr: 'npm' | 'yarn' | 'pnpm';
+}
+
+function loadSavedState(): SavedState | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as SavedState;
+  } catch {
+    return null;
+  }
+}
+
+function saveState(state: SavedState): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // quota exceeded or private browsing — silently ignore
+  }
+}
+
+function clearSavedState(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
 
 // ── Large curve editor (inline, not popover) ────────────────────────
 

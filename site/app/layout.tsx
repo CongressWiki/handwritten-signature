@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
   title: 'Handwritten Signature',
@@ -41,6 +42,7 @@ export default function RootLayout({
         `}</style>
       </head>
       <body>
+        <Toaster position="bottom-center" richColors />
         <Nav />
         <main style={{ maxWidth: 1080, margin: '0 auto', padding: '0 24px 80px' }}>
           {children}
