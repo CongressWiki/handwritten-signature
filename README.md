@@ -1,5 +1,7 @@
 # @congresswiki/handwritten-signature
 
+![Handwritten Signature Demo](./demo.gif)
+
 Animated handwriting React component that renders text as cursive SVG stroke paths. Each letter draws on sequentially with configurable timing, spacing, and overlap.
 
 ## Install
