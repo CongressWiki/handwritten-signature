@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.12
+
+### Patch Changes
+
+- [`10be794`](https://github.com/CongressWiki/handwritten-signature/commit/10be79472bb41e6aff513ccd1b5dda6b36c052a5) Thanks [@ryparker](https://github.com/ryparker)! - Switch releases to a Changesets-managed flow that keeps protected-branch changelog updates compatible with npm trusted publishing.
+
 All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
