@@ -10,6 +10,12 @@ from Git tags and commit history.
 
 ## Unreleased
 
+## [0.12.8] - 2026-04-10
+
+### Changed
+
+- Configure GitHub Pages in workflow
+
 ## [0.12.7] - 2026-04-10
 
 ### Changed
