@@ -16,6 +16,16 @@ from Git tags and commit history.
 
 ## Unreleased
 
+## [0.12.15] - 2026-04-10
+
+### Added
+
+- Add SSR signature layout assertions
+
+### Changed
+
+- Update signature release workflow docs
+
 ## [0.12.14] - 2026-04-10
 
 ### Changed
