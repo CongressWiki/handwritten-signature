@@ -29,7 +29,9 @@ The site imports directly from `../src/` via Turbopack — changes to the compon
 
 ## Publishing
 
-Automatic after successful `CI` on `main`. The release workflow waits for the `CI` workflow to pass, then classifies commits as patch/minor/major, updates `CHANGELOG.md`, publishes to GitHub Packages, and commits the release metadata back with a `[skip ci]` tag.
+Automatic after successful `CI` on `main` once npm trusted publishing is configured. The release workflow waits for the `CI` workflow to pass, then classifies commits as patch/minor/major, updates `CHANGELOG.md`, publishes to npm via OIDC, and commits the release metadata back with a `[skip ci]` tag.
+
+The first public npm release is a one-time manual bootstrap because trusted publishing can only be configured for packages that already exist on the npm registry.
 
 A second workflow (`pages.yml`) deploys `site/out/` to GitHub Pages on push to `main` once the repository is on a plan/state that supports Pages. While the repository is private on plans without private Pages support, that workflow exits cleanly without attempting a deployment.
 
@@ -89,12 +91,4 @@ The easing curve editor draws on a `<canvas>` with two draggable control points 
 
 ## Consumer Setup
 
-Requires `.yarnrc.yml` configured for GitHub Packages:
-
-```yaml
-npmScopes:
-  congresswiki:
-    npmRegistryServer: "https://npm.pkg.github.com"
-    npmAlwaysAuth: true
-    npmAuthToken: "${GITHUB_TOKEN}"
-```
+Consumers install the package directly from the public npm registry with no extra registry configuration.

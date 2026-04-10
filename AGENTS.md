@@ -28,13 +28,15 @@ The demo imports directly from `../src/`, so source changes appear immediately t
 
 ## Publishing
 
-Publishing is automatic after successful `CI` on `main`.
+Publishing is automatic after successful `CI` on `main` once npm trusted publishing is configured.
 
 - CI builds and type checks
 - AI classifies the version bump
 - `CHANGELOG.md` is updated during releases
-- the package is published to GitHub Packages
+- the package is published to npm via OIDC
 - the static demo site is deployed by the Pages workflow once GitHub Pages is available for the repository
+
+The first public npm release is a one-time manual bootstrap because trusted publishing can only be attached to packages that already exist on npm.
 
 ## Architecture
 
@@ -99,12 +101,4 @@ The transport logic uses the Web Animations API rather than package-internal tim
 
 ## Consumer Setup
 
-Consumers need GitHub Packages auth in `.yarnrc.yml`:
-
-```yaml
-npmScopes:
-  congresswiki:
-    npmRegistryServer: "https://npm.pkg.github.com"
-    npmAlwaysAuth: true
-    npmAuthToken: "${GITHUB_TOKEN}"
-```
+Consumers install the package directly from the public npm registry with no extra registry configuration.

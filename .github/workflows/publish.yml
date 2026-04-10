@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      packages: write
+      id-token: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       VALIDATED_SHA: ${{ github.event.workflow_run.head_sha }}
@@ -41,7 +41,10 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
-          registry-url: https://npm.pkg.github.com
+          registry-url: https://registry.npmjs.org
+
+      - name: Use npm CLI with trusted publishing support
+        run: npm install -g npm@^11.10.0
 
       - run: yarn install --immutable
 
@@ -60,13 +63,29 @@ jobs:
             echo "publishable=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Check npm trusted publishing readiness
+        id: readiness
+        if: steps.freshness.outputs.publishable == 'true'
+        run: |
+          if [ "${{ github.event.workflow_run.repository.private }}" = "true" ]; then
+            echo "publishable=false" >> "$GITHUB_OUTPUT"
+            echo "Repository is still private. npm provenance via trusted publishing requires a public repository."
+            exit 0
+          fi
+
+          if npm view "@congresswiki/handwritten-signature" version --registry="https://registry.npmjs.org" >/dev/null 2>&1; then
+            echo "publishable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publishable=false" >> "$GITHUB_OUTPUT"
+            echo "Package is not bootstrapped on npm yet. Do a one-time manual publish, then configure npm trusted publishing for publish.yml."
+          fi
+
       # Determine version bump type using AI analysis of changes
       - name: Determine version bump type
         id: version
-        if: steps.freshness.outputs.publishable == 'true'
+        if: steps.freshness.outputs.publishable == 'true' && steps.readiness.outputs.publishable == 'true'
         env:
           AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           LAST_TAG=$(git tag -l "v*" --sort=-v:refname | head -1 || echo "")
@@ -159,7 +178,7 @@ jobs:
 
       # Bump version if needed, publish, commit back
       - name: Publish
-        if: steps.freshness.outputs.publishable == 'true'
+        if: steps.freshness.outputs.publishable == 'true' && steps.readiness.outputs.publishable == 'true'
         run: |
           BUMP="${{ steps.version.outputs.bump }}"
           DIFF_BASE="${{ steps.version.outputs.diff_base }}"
@@ -185,7 +204,7 @@ jobs:
           yarn build
 
           # Publish
-          yarn npm publish
+          npm publish --access public --provenance
           echo "Published ${NEW_VERSION}"
 
           git config user.name "github-actions[bot]"

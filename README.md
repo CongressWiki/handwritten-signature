@@ -6,20 +6,10 @@ Animated handwriting React component that renders text as cursive SVG stroke pat
 
 ## Install
 
-Install the published package from GitHub Packages:
+Install the published package from npm:
 
 ```bash
-yarn add @congresswiki/handwritten-signature
-```
-
-Requires `.yarnrc.yml` configured for GitHub Packages:
-
-```yaml
-npmScopes:
-  congresswiki:
-    npmRegistryServer: "https://npm.pkg.github.com"
-    npmAlwaysAuth: true
-    npmAuthToken: "${GITHUB_TOKEN}"
+npm install @congresswiki/handwritten-signature
 ```
 
 ## Usage
@@ -72,8 +62,6 @@ The component inherits `color` from its parent for stroke color. Animation is CS
 
 ## Development
 
-Local development does not require a GitHub token unless you are installing from or publishing to GitHub Packages.
-
 ```bash
 yarn install
 yarn lint
@@ -92,6 +80,14 @@ yarn site:build
 
 ## Publishing
 
-Automatic after successful `CI` on `main`. The publish workflow waits for the `CI` workflow to pass, then classifies the version bump (patch/minor/major), updates `CHANGELOG.md`, publishes to GitHub Packages, and commits the release metadata back.
+Normal releases publish to npm after successful `CI` on `main` using npm trusted publishing (OIDC). The publish workflow waits for the `CI` workflow to pass, classifies the version bump (patch/minor/major), updates `CHANGELOG.md`, publishes to npm, and commits the release metadata back.
+
+The first npm release is a one-time bootstrap step because npm trusted publishing can only be configured for packages that already exist on the npm registry. Recommended bootstrap sequence:
+
+1. Make the GitHub repository public.
+2. Log in with an npm account that can publish under the `@congresswiki` scope.
+3. Run a one-time manual publish: `npm publish --access public`.
+4. Configure the trusted publisher for `publish.yml` on npm, or run `npm trust github @congresswiki/handwritten-signature --repo CongressWiki/handwritten-signature --file publish.yml`.
+5. After that, all future releases can publish from GitHub Actions via OIDC without npm tokens.
 
 The demo site deployment workflow automatically skips while the repository is private on plans that do not support GitHub Pages for private repositories. Once the repository is public, the same workflow will deploy `site/out/` to GitHub Pages.
