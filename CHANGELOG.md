@@ -10,6 +10,12 @@ from Git tags and commit history.
 
 ## Unreleased
 
+## [0.12.10] - 2026-04-10
+
+### Changed
+
+- Gate package publish on CI success
+
 ## [0.12.9] - 2026-04-10
 
 ### Changed
