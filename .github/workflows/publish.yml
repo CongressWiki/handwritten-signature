@@ -22,7 +22,6 @@ jobs:
     permissions:
       contents: write
       id-token: write
-      pull-requests: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       VALIDATED_SHA: ${{ github.event.workflow_run.head_sha }}
@@ -61,50 +60,145 @@ jobs:
         if: steps.freshness.outputs.publishable == 'true'
         run: yarn install --immutable
 
-      - name: Create or update release PR
-        id: changesets
-        if: steps.freshness.outputs.publishable == 'true'
-        uses: changesets/action@v1
-        with:
-          version: yarn changeset version
-          commit: Version packages
-          title: Version packages
-          commitMode: github-api
-          createGithubReleases: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Check npm publish readiness
         id: readiness
-        if: steps.freshness.outputs.publishable == 'true' && steps.changesets.outputs.hasChangesets == 'false'
+        if: steps.freshness.outputs.publishable == 'true'
         run: |
           if [ "${{ github.event.workflow_run.repository.private }}" = "true" ]; then
-            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+            echo "publishable=false" >> "$GITHUB_OUTPUT"
             echo "Repository is private. npm trusted publishing with provenance requires a public repository."
             exit 0
           fi
 
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-
-          if npx --yes npm@11.10.0 view "@congresswiki/handwritten-signature@${VERSION}" version --registry="https://registry.npmjs.org" >/dev/null 2>&1; then
-            echo "should_publish=false" >> "$GITHUB_OUTPUT"
-            echo "Version ${VERSION} is already published. Skipping."
+          if npx --yes npm@11.10.0 view "@congresswiki/handwritten-signature" version --registry="https://registry.npmjs.org" >/dev/null 2>&1; then
+            echo "publishable=true" >> "$GITHUB_OUTPUT"
           else
-            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            echo "publishable=false" >> "$GITHUB_OUTPUT"
+            echo "Package is not bootstrapped on npm yet. Do a one-time manual publish, then enable trusted publishing."
           fi
 
-      - name: Publish current version to npm
-        if: steps.readiness.outputs.should_publish == 'true'
-        run: yarn release:publish
-
-      - name: Push release tag
-        if: steps.readiness.outputs.should_publish == 'true'
+      - name: Determine version bump type
+        id: version
+        if: steps.freshness.outputs.publishable == 'true' && steps.readiness.outputs.publishable == 'true'
+        env:
+          AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
         run: |
-          VERSION="${{ steps.readiness.outputs.version }}"
-          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
-            echo "Tag v${VERSION} already exists locally."
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          LAST_TAG=$(git tag -l "v*" --sort=-v:refname | head -1 || echo "")
+
+          if [ -n "$LAST_TAG" ]; then
+            DIFF_BASE="$LAST_TAG"
           else
-            git tag "v${VERSION}"
+            DIFF_BASE=$(git rev-list --max-parents=0 HEAD | tail -1)
           fi
-          git push origin "v${VERSION}"
+
+          echo "diff_base=${DIFF_BASE}" >> "$GITHUB_OUTPUT"
+
+          if npx --yes npm@11.10.0 view "@congresswiki/handwritten-signature@${CURRENT_VERSION}" version --registry="https://registry.npmjs.org" >/dev/null 2>&1; then
+            echo "Version ${CURRENT_VERSION} already published — analyzing changes..."
+          else
+            echo "Version ${CURRENT_VERSION} not yet published — publishing as-is"
+            echo "bump=none" >> "$GITHUB_OUTPUT"
+            echo "version=${CURRENT_VERSION}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          COMMITS=$(git log "${DIFF_BASE}..HEAD" --pretty=format:"- %s" 2>/dev/null | head -30)
+          DIFF_STAT=$(git diff "${DIFF_BASE}..HEAD" --stat 2>/dev/null | tail -5)
+          DIFF_NAMES=$(git diff "${DIFF_BASE}..HEAD" --name-only 2>/dev/null | head -30)
+
+          if [ -z "$AI_GATEWAY_API_KEY" ]; then
+            echo "No AI_GATEWAY_API_KEY — defaulting to patch"
+            echo "bump=patch" >> "$GITHUB_OUTPUT"
+            NEW_VERSION=$(node -e "const [a,b,c]='${CURRENT_VERSION}'.split('.').map(Number);console.log(a+'.'+b+'.'+(c+1))")
+            echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          PROMPT="You are a semver versioning assistant for an npm package called @congresswiki/handwritten-signature.
+          This package provides an animated handwriting component for React using SVG stroke paths.
+          It exports glyphs, layout utilities, and type definitions.
+
+          Analyze these changes and respond with ONLY one word: patch, minor, or major.
+
+          Rules:
+          - patch: bug fixes, typo fixes, dependency updates, internal refactors with no API changes
+          - minor: new features, new exports, new optional parameters, non-breaking additions (e.g. new glyphs)
+          - major: breaking changes to existing exports, removed exports, changed function signatures, renamed types
+
+          Commits since last release:
+          ${COMMITS}
+
+          Files changed:
+          ${DIFF_NAMES}
+
+          Diff summary:
+          ${DIFF_STAT}"
+
+          RESPONSE=$(curl -s -X POST "https://ai-gateway.vercel.sh/v3/ai/chat/completions" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${AI_GATEWAY_API_KEY}" \
+            -d "$(jq -n --arg prompt "$PROMPT" '{
+              "model": "anthropic/claude-haiku-4-5-20251001",
+              "max_tokens": 10,
+              "messages": [{"role": "user", "content": $prompt}]
+            }')" 2>/dev/null)
+
+          BUMP_TYPE=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "patch"' | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')
+
+          if [[ "$BUMP_TYPE" != "patch" && "$BUMP_TYPE" != "minor" && "$BUMP_TYPE" != "major" ]]; then
+            echo "AI returned unexpected value '${BUMP_TYPE}' — defaulting to patch"
+            BUMP_TYPE="patch"
+          fi
+
+          echo "AI determined bump type: ${BUMP_TYPE}"
+          echo "bump=${BUMP_TYPE}" >> "$GITHUB_OUTPUT"
+
+          NEW_VERSION=$(node -e "
+            const [major, minor, patch] = '${CURRENT_VERSION}'.split('.').map(Number);
+            const type = '${BUMP_TYPE}';
+            if (type === 'major') console.log((major + 1) + '.0.0');
+            else if (type === 'minor') console.log(major + '.' + (minor + 1) + '.0');
+            else console.log(major + '.' + minor + '.' + (patch + 1));
+          ")
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish
+        if: steps.freshness.outputs.publishable == 'true' && steps.readiness.outputs.publishable == 'true'
+        run: |
+          BUMP="${{ steps.version.outputs.bump }}"
+          DIFF_BASE="${{ steps.version.outputs.diff_base }}"
+          NEW_VERSION="${{ steps.version.outputs.version }}"
+
+          if [ "$BUMP" != "none" ]; then
+            echo "Bumping ${BUMP} → ${NEW_VERSION}"
+
+            node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+              pkg.version = '${NEW_VERSION}';
+              fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            "
+          else
+            echo "Publishing current version as-is..."
+          fi
+
+          node ./scripts/update-changelog.mjs --version "${NEW_VERSION}" --base "${DIFF_BASE}"
+
+          yarn release:publish
+          echo "Published ${NEW_VERSION}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json CHANGELOG.md
+
+          if ! git diff --cached --quiet; then
+            git commit -m "v${NEW_VERSION} [skip ci]"
+            git push origin HEAD:main
+          fi
+
+          if ! git rev-parse "v${NEW_VERSION}" >/dev/null 2>&1; then
+            git tag "v${NEW_VERSION}"
+          fi
+
+          git push origin --tags

@@ -39,7 +39,6 @@
   ],
   "scripts": {
     "build": "tsup",
-    "changeset": "changeset",
     "dev": "tsup --watch",
     "lint": "eslint src scripts tsup.config.ts vitest.config.ts vitest.setup.ts eslint.config.mjs",
     "release:publish": "yarn build && npx --yes npm@11.10.0 publish --access public --provenance",
@@ -48,15 +47,12 @@
     "test": "vitest",
     "test:run": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "version-packages": "changeset version",
     "prepublishOnly": "yarn build"
   },
   "peerDependencies": {
     "react": ">=18"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.6.0",
-    "@changesets/cli": "^2.30.0",
     "@eslint/js": "^9",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
