@@ -16,6 +16,12 @@ from Git tags and commit history.
 
 ## Unreleased
 
+## [0.12.14] - 2026-04-10
+
+### Changed
+
+- Use release token for publish pushes
+
 ## [0.12.13] - 2026-04-10
 
 ### Changed

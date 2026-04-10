@@ -1,6 +1,6 @@
 {
   "name": "@congresswiki/handwritten-signature",
-  "version": "0.12.13",
+  "version": "0.12.14",
   "description": "Animated handwriting component for React using SVG stroke paths",
   "keywords": [
     "react",
