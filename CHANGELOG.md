@@ -9,3 +9,9 @@ Historical releases before changelog automation was added can be reconstructed
 from Git tags and commit history.
 
 ## Unreleased
+
+## [0.12.7] - 2026-04-10
+
+### Changed
+
+- Prepare repo for public release
