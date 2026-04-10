@@ -43,9 +43,6 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org
 
-      - name: Use npm CLI with trusted publishing support
-        run: npm install -g npm@^11.10.0
-
       - run: yarn install --immutable
 
       - run: yarn build
@@ -73,7 +70,7 @@ jobs:
             exit 0
           fi
 
-          if npm view "@congresswiki/handwritten-signature" version --registry="https://registry.npmjs.org" >/dev/null 2>&1; then
+          if npx --yes npm@11.10.0 view "@congresswiki/handwritten-signature" version --registry="https://registry.npmjs.org" >/dev/null 2>&1; then
             echo "publishable=true" >> "$GITHUB_OUTPUT"
           else
             echo "publishable=false" >> "$GITHUB_OUTPUT"
@@ -204,7 +201,7 @@ jobs:
           yarn build
 
           # Publish
-          npm publish --access public --provenance
+          npx --yes npm@11.10.0 publish --access public --provenance
           echo "Published ${NEW_VERSION}"
 
           git config user.name "github-actions[bot]"
