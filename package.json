@@ -2,6 +2,18 @@
   "name": "@congresswiki/handwritten-signature",
   "version": "0.12.6",
   "description": "Animated handwriting component for React using SVG stroke paths",
+  "keywords": [
+    "react",
+    "signature",
+    "svg",
+    "animation",
+    "handwriting",
+    "cursive"
+  ],
+  "homepage": "https://github.com/CongressWiki/handwritten-signature#readme",
+  "bugs": {
+    "url": "https://github.com/CongressWiki/handwritten-signature/issues"
+  },
   "packageManager": "yarn@4.12.0",
   "type": "module",
   "exports": {
@@ -28,6 +40,11 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "lint": "eslint src scripts tsup.config.ts vitest.config.ts vitest.setup.ts eslint.config.mjs",
+    "site:build": "yarn --cwd site build",
+    "site:typecheck": "yarn --cwd site typecheck",
+    "test": "vitest",
+    "test:run": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "yarn build"
   },
@@ -35,10 +52,25 @@
     "react": ">=18"
   },
   "devDependencies": {
+    "@eslint/js": "^9",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^25.5.2",
     "@types/react": "^19.0.0",
-    "react": "^19.2.4",
+    "@types/react-dom": "^19.2.3",
+    "@vitest/coverage-v8": "^4.1.4",
+    "eslint": "^9",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "globals": "^17.4.0",
+    "jsdom": "^29.0.2",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "tsup": "^8.4.0",
-    "typescript": "^5.8.0"
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.58.1",
+    "vitest": "^4.1.4"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -47,5 +79,5 @@
     "type": "git",
     "url": "https://github.com/CongressWiki/handwritten-signature.git"
   },
-  "license": "UNLICENSED"
+  "license": "MIT"
 }

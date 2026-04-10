@@ -42,6 +42,15 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
+          LAST_TAG=$(git tag -l "v*" --sort=-v:refname | head -1 || echo "")
+
+          if [ -n "$LAST_TAG" ]; then
+            DIFF_BASE="$LAST_TAG"
+          else
+            DIFF_BASE=$(git rev-list --max-parents=0 HEAD | tail -1)
+          fi
+
+          echo "diff_base=${DIFF_BASE}" >> "$GITHUB_OUTPUT"
 
           # Check if this version is already published using yarn npm info
           if yarn npm info "@congresswiki/handwritten-signature@${CURRENT_VERSION}" --fields version 2>/dev/null | grep -q "${CURRENT_VERSION}"; then
@@ -54,15 +63,6 @@ jobs:
           fi
 
           echo "Version ${CURRENT_VERSION} already published — analyzing changes..."
-
-          # Find the last version tag or use the commit that set this version
-          LAST_TAG=$(git tag -l "v*" --sort=-v:refname | head -1 || echo "")
-          if [ -n "$LAST_TAG" ]; then
-            DIFF_BASE="$LAST_TAG"
-          else
-            # No tags — diff against the commit that last changed package.json version
-            DIFF_BASE=$(git log --format=%H -1 --diff-filter=M -- package.json HEAD~1 2>/dev/null || echo "HEAD~5")
-          fi
 
           # Get commit messages and diff summary since last version
           COMMITS=$(git log "${DIFF_BASE}..HEAD" --pretty=format:"- %s" 2>/dev/null | head -30)
@@ -134,13 +134,10 @@ jobs:
       - name: Publish
         run: |
           BUMP="${{ steps.version.outputs.bump }}"
+          DIFF_BASE="${{ steps.version.outputs.diff_base }}"
           NEW_VERSION="${{ steps.version.outputs.version }}"
 
-          if [ "$BUMP" = "none" ]; then
-            echo "Publishing current version as-is..."
-            yarn npm publish
-            echo "Published ${NEW_VERSION}"
-          else
+          if [ "$BUMP" != "none" ]; then
             echo "Bumping ${BUMP} → ${NEW_VERSION}"
 
             # Update package.json
@@ -150,20 +147,30 @@ jobs:
               pkg.version = '${NEW_VERSION}';
               fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
             "
-
-            # Rebuild with new version
-            yarn build
-
-            # Publish
-            yarn npm publish
-            echo "Published ${NEW_VERSION}"
-
-            # Tag and commit back to main
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add package.json
-            git commit -m "v${NEW_VERSION} [skip ci]"
-            git tag "v${NEW_VERSION}"
-            git push
-            git push --tags
+          else
+            echo "Publishing current version as-is..."
           fi
+
+          node ./scripts/update-changelog.mjs --version "${NEW_VERSION}" --base "${DIFF_BASE}"
+
+          # Rebuild with any release metadata changes
+          yarn build
+
+          # Publish
+          yarn npm publish
+          echo "Published ${NEW_VERSION}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json CHANGELOG.md
+
+          if ! git diff --cached --quiet; then
+            git commit -m "v${NEW_VERSION} [skip ci]"
+            git push
+          fi
+
+          if ! git rev-parse "v${NEW_VERSION}" >/dev/null 2>&1; then
+            git tag "v${NEW_VERSION}"
+          fi
+
+          git push --tags

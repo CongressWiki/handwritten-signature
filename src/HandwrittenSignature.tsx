@@ -1,7 +1,7 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useInsertionEffect, type CSSProperties, type ReactNode } from 'react';
 import type { HandwrittenSignatureProps } from './types';
 import { SIGNATURE_GLYPHS } from './glyphs';
-import { CSS, STYLE_ID } from './styles';
+import { acquireSignatureStyles, releaseSignatureStyles } from './styles';
 import {
   CODEPEN_BASE_LETTER_HEIGHT,
   DEFAULT_INITIAL_DELAY_MS,
@@ -99,13 +99,13 @@ const buildGlyphElements = ({
         <span
           key={`space-${index}`}
           className="hws-space"
-          style={
-            {
-              '--hws-space-w': spaceWidthPx,
-              '--hws-ml': formatPx(0),
-              '--hws-mr': formatPx(spaceMarginRight),
-            } as CSSProperties
-          }
+          style={{
+            display: 'inline-block',
+            width: spaceWidthPx,
+            height: letterHeightPx,
+            marginLeft: 0,
+            marginRight: formatPx(spaceMarginRight),
+          }}
         />,
       );
       cumulativeDelay += durationPerLetterMs * SPACE_DELAY_MULTIPLIER;
@@ -135,14 +135,13 @@ const buildGlyphElements = ({
         <span
           key={`missing-${index}`}
           className="hws-missing"
-          style={
-            {
-              '--hws-missing-w': missingGlyphWidthPx,
-              '--hws-h': letterHeightPx,
-              '--hws-ml': formatPx(marginLeftValue),
-              '--hws-mr': formatPx(marginRightValue),
-            } as CSSProperties
-          }
+          style={{
+            display: 'inline-block',
+            width: missingGlyphWidthPx,
+            height: letterHeightPx,
+            marginLeft: formatPx(marginLeftValue),
+            marginRight: formatPx(marginRightValue),
+          }}
         />,
       );
       cumulativeDelay +=
@@ -215,13 +214,23 @@ const buildGlyphElements = ({
           strokeLinejoin="round"
           fill="none"
           className="hws-path"
-          style={
-            {
-              '--hws-dur': `${Math.round(strokeDurationMs)}ms`,
-              '--hws-delay': `${Math.round(animationDelayMs)}ms`,
-              '--hws-dash-length': dashLengthString,
-            } as CSSProperties
-          }
+          style={{
+            strokeDasharray: dashLengthString,
+            strokeDashoffset: 0,
+            strokeOpacity: 1,
+            animationName: 'hws-letter-stroke',
+            animationDuration: `${Math.round(strokeDurationMs)}ms`,
+            animationDelay: `${Math.round(animationDelayMs)}ms`,
+            animationTimingFunction:
+              'var(--hws-easing, cubic-bezier(0.33, 1, 0.68, 1))',
+            animationDirection: 'reverse',
+            animationFillMode: 'both',
+            animationIterationCount: 1,
+            animationPlayState:
+              'var(--hws-play, running)' as CSSProperties['animationPlayState'],
+            willChange: 'stroke-dashoffset, stroke-opacity',
+            '--hws-dash-length': dashLengthString,
+          } as CSSProperties}
         />,
       );
 
@@ -252,15 +261,15 @@ const buildGlyphElements = ({
         className="hws-glyph"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={
-          {
-            '--hws-svg-w': formatPx(svgWidthValue),
-            '--hws-h': letterHeightPx,
-            '--hws-ml': formatPx(marginLeftValue),
-            '--hws-mr': formatPx(marginRightValue),
-            '--hws-bl': formatPx(baselineShiftValue),
-          } as CSSProperties
-        }
+        style={{
+          display: 'inline-block',
+          overflow: 'visible',
+          width: formatPx(svgWidthValue),
+          height: letterHeightPx,
+          marginLeft: formatPx(marginLeftValue),
+          marginRight: formatPx(marginRightValue),
+          transform: `translateY(${formatPx(baselineShiftValue)})`,
+        }}
         aria-hidden="true"
       >
         {pathElements}
@@ -297,6 +306,13 @@ const HandwrittenSignature = ({
   style,
   ...delegated
 }: HandwrittenSignatureProps) => {
+  useInsertionEffect(() => {
+    acquireSignatureStyles();
+    return () => {
+      releaseSignatureStyles();
+    };
+  }, []);
+
   const glyphElements = buildGlyphElements({
     text,
     letterSpacing,
@@ -310,25 +326,24 @@ const HandwrittenSignature = ({
   });
 
   // Merge easing CSS variable into the style prop
-  const mergedStyle = easing
-    ? { ...style, '--hws-easing': easing } as CSSProperties
-    : style;
+  const mergedStyle = {
+    display: 'flex',
+    alignItems: 'flex-end',
+    pointerEvents: 'auto',
+    gap: 0,
+    color: 'inherit',
+    ...(style ?? {}),
+    ...(easing ? { '--hws-easing': easing } : {}),
+  } as CSSProperties;
 
   return (
-    <>
-      <style
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: CSS }}
-        suppressHydrationWarning
-      />
-      <div
-        className={['hws-signature', className].filter(Boolean).join(' ')}
-        style={mergedStyle}
-        {...delegated}
-      >
-        {glyphElements}
-      </div>
-    </>
+    <div
+      className={['hws-signature', className].filter(Boolean).join(' ')}
+      style={mergedStyle}
+      {...delegated}
+    >
+      {glyphElements}
+    </div>
   );
 };
 

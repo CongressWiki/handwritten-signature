@@ -6,6 +6,8 @@ Animated handwriting React component that renders text as cursive SVG stroke pat
 
 ## Install
 
+Install the published package from GitHub Packages:
+
 ```bash
 yarn add @congresswiki/handwritten-signature
 ```
@@ -68,6 +70,26 @@ The component inherits `color` from its parent for stroke color. Animation is CS
 }
 ```
 
+## Development
+
+Local development does not require a GitHub token unless you are installing from or publishing to GitHub Packages.
+
+```bash
+yarn install
+yarn lint
+yarn typecheck
+yarn test:run
+yarn build
+yarn site:typecheck
+yarn site:build
+```
+
+## Community
+
+- [Contributing](./CONTRIBUTING.md)
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
+- [Security Policy](./SECURITY.md)
+
 ## Publishing
 
-Automatic on push to `main`. CI builds, typechecks, uses AI to classify the version bump (patch/minor/major), publishes to GitHub Packages, and commits the version bump back.
+Automatic on push to `main`. CI builds, typechecks, uses AI to classify the version bump (patch/minor/major), updates `CHANGELOG.md`, publishes to GitHub Packages, and commits the release metadata back.

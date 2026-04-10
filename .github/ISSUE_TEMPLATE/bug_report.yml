@@ -1,0 +1,54 @@
+name: Bug report
+description: Report a bug in the package or demo site
+title: '[Bug]: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please include enough detail to reproduce the issue.
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: e.g. 0.12.5
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did you see the bug?
+      options:
+        - Published package
+        - Demo site
+        - Both
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide code, steps, or a minimal repro.
+      placeholder: |
+        1. Render the component with...
+        2. Trigger...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: React version, browser, OS, bundler, screenshots, console output

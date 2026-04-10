@@ -2,8 +2,14 @@ node_modules
 dist
 *.tsbuildinfo
 .DS_Store
+.eslintcache
+coverage
+*.tgz
+.yarn/install-state.gz
 
 # Demo site
+demo/.next
 site/.next
 site/out
 site/node_modules
+site/.yarn/install-state.gz

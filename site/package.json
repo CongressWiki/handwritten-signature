@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack --port 3099",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "next": "^16.2.2",

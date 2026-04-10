@@ -4,23 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-`@congresswiki/handwritten-signature` — a private npm package that renders text as animated cursive SVG stroke paths. Each letter draws on sequentially with configurable timing, spacing, overlap, and realistic handwriting effects (tempo variation, pressure simulation). Used across Congress.wiki sites.
+`@congresswiki/handwritten-signature` renders text as animated cursive SVG stroke paths. Each letter draws on sequentially with configurable timing, spacing, overlap, and handwriting effects such as tempo variation and pressure simulation.
 
 ## Commands
 
 ```bash
 yarn build        # Build with tsup (ESM + .d.ts)
 yarn dev          # Build in watch mode
+yarn lint         # ESLint across package source, tests, and scripts
+yarn test:run     # Vitest with coverage
 yarn typecheck    # tsc --noEmit
 ```
-
-No test suite. Validate changes by building and typechecking.
 
 ### Demo Site
 
 ```bash
 cd site
-yarn dev          # Start Next.js dev server at http://localhost:3099
+yarn dev          # Start Next.js dev server
+yarn typecheck    # Site TS validation
 yarn build        # Static export to site/out/ (for GitHub Pages)
 ```
 
@@ -28,7 +29,7 @@ The site imports directly from `../src/` via Turbopack — changes to the compon
 
 ## Publishing
 
-Automatic on push to `main`. CI builds, typechecks, uses AI (Haiku via Vercel AI Gateway) to classify commits as patch/minor/major, publishes to GitHub Packages, and commits the version bump back with `[skip ci]` tag.
+Automatic on push to `main`. CI builds, typechecks, uses AI to classify commits as patch/minor/major, updates `CHANGELOG.md`, publishes to GitHub Packages, and commits the release metadata back with a `[skip ci]` tag.
 
 A second workflow (`pages.yml`) deploys `site/out/` to GitHub Pages on push to `main`.
 
@@ -52,11 +53,11 @@ Single React component (`HandwrittenSignature`) with four entry points:
 3. Layout configs in `layout.ts` define per-character `marginLeft`, `marginRight`, `baselineShift`, and `dashLength`/`dashLengths` (measured via `getTotalLength()` + 30% padding)
 4. Animation uses CSS `stroke-dashoffset` with per-path CSS custom properties (`--hws-dur`, `--hws-delay`, `--hws-dash-length`)
 5. The `easing` prop sets `--hws-easing` CSS variable on the container (default: `cubic-bezier(0.33, 1, 0.68, 1)`)
-6. Styles are injected inline via a `<style>` tag (no external CSS dependency)
+6. Shared keyframe styles are installed once per document and removed after the last mounted component unmounts
 
 ### Realism Props
 
-- **`tempoVariation`** (0–1): Modulates inter-letter delay with a per-word sin curve. Middle letters in each word draw faster, start/end letters slower. Multi-word text (e.g. "Ryan Parker") gets independent tempo cycles per word.
+- **`tempoVariation`** (0–1): Modulates inter-letter delay with a per-word sin curve. Middle letters in each word draw faster, start/end letters slower. Each word gets an independent tempo cycle.
 - **`pressureVariation`** (0–1): Varies `strokeWidth` per glyph — thicker in the middle of each word, thinner at edges. Uses the same per-word position calculation as tempo. Value is rounded to 2 decimals to avoid SSR hydration mismatches.
 - **`easing`**: CSS timing function for each individual glyph's stroke draw-in animation. Does NOT control overall pacing across the signature — that's what `tempoVariation` does.
 
@@ -74,7 +75,7 @@ Single React component (`HandwrittenSignature`) with four entry points:
 
 ### Styles (`styles.ts`)
 
-Contains the injected CSS: keyframe animation `hws-letter-stroke`, glyph/space/missing layout classes, and the `--hws-play` CSS variable that allows external control of animation play state (used by the demo site's `useAnimationControl` hook via the Web Animations API).
+Contains the shared stylesheet helpers and keyframe animation `hws-letter-stroke`. The `--hws-play` CSS variable still allows external control of animation play state from the demo site's `useAnimationControl` hook via the Web Animations API.
 
 ### Demo Site (`site/`)
 
