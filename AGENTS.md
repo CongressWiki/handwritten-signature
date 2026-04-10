@@ -28,12 +28,12 @@ The demo imports directly from `../src/`, so source changes appear immediately t
 
 ## Publishing
 
-Publishing uses Changesets plus npm trusted publishing.
+Publishing uses the repo's AI-driven auto-release workflow plus npm trusted publishing.
 
-- add a changeset with `yarn changeset` for releasable package changes
-- after `CI` passes on `main`, the publish workflow opens or updates a `Version packages` PR
-- merging that PR lands the version bump and `CHANGELOG.md` update on `main`
-- after `CI` passes on the merged release commit, the package is published to npm via OIDC and the matching `v*` tag is pushed
+- after `CI` passes on `main`, the publish workflow compares commits since the latest `v*` tag
+- the workflow asks the AI classifier for the correct semver bump (`patch`, `minor`, or `major`)
+- if a release is needed, the workflow updates `package.json` and `CHANGELOG.md`, publishes to npm via OIDC, and pushes the matching release commit and `v*` tag back to `main`
+- branch-protected release pushes use `RELEASE_PUSH_TOKEN`
 - the static demo site is deployed by the Pages workflow once GitHub Pages is available for the repository
 
 The first public npm release was a one-time manual bootstrap because trusted publishing can only be attached to packages that already exist on npm.
@@ -55,7 +55,7 @@ Entry points:
 2. glyph data comes from `SIGNATURE_GLYPHS`
 3. layout data comes from `layout.ts`
 4. stroke animation is driven by `stroke-dashoffset` and inline CSS custom properties
-5. shared keyframe styles are installed once per document and removed after the last component unmounts
+5. shared keyframe styles are emitted inline by the component so the consumer API stays zero-config and SSR-safe
 
 Multi-stroke letters use `paths[]` so strokes animate in order.
 
