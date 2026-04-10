@@ -1,24 +1,39 @@
 name: Publish
 
 on:
-  push:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
     branches: [main]
+
+concurrency:
+  group: publish-main
+  cancel-in-progress: false
 
 jobs:
   publish:
-    # Skip CI-generated version bump commits
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    if: >-
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main'
+      }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      VALIDATED_SHA: ${{ github.event.workflow_run.head_sha }}
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+
+      - name: Align checkout to validated commit
+        run: git checkout -B main "${VALIDATED_SHA}"
 
       - name: Enable Corepack (Yarn 4)
         run: corepack enable
@@ -34,9 +49,21 @@ jobs:
 
       - run: yarn typecheck
 
+      - name: Check validated commit is still current
+        id: freshness
+        run: |
+          REMOTE_SHA=$(git ls-remote origin refs/heads/main | awk '{print $1}')
+          if [ "$REMOTE_SHA" != "$VALIDATED_SHA" ]; then
+            echo "publishable=false" >> "$GITHUB_OUTPUT"
+            echo "origin/main moved to ${REMOTE_SHA} after CI validated ${VALIDATED_SHA}. Skipping stale publish."
+          else
+            echo "publishable=true" >> "$GITHUB_OUTPUT"
+          fi
+
       # Determine version bump type using AI analysis of changes
       - name: Determine version bump type
         id: version
+        if: steps.freshness.outputs.publishable == 'true'
         env:
           AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -80,7 +107,7 @@ jobs:
 
           # Ask AI to classify the version bump type
           PROMPT="You are a semver versioning assistant for an npm package called @congresswiki/handwritten-signature.
-          This is a private shared library that provides an animated handwriting component for React using SVG stroke paths.
+          This package provides an animated handwriting component for React using SVG stroke paths.
           It exports glyphs, layout utilities, and type definitions.
 
           Analyze these changes and respond with ONLY one word: patch, minor, or major.
@@ -132,6 +159,7 @@ jobs:
 
       # Bump version if needed, publish, commit back
       - name: Publish
+        if: steps.freshness.outputs.publishable == 'true'
         run: |
           BUMP="${{ steps.version.outputs.bump }}"
           DIFF_BASE="${{ steps.version.outputs.diff_base }}"
@@ -166,11 +194,11 @@ jobs:
 
           if ! git diff --cached --quiet; then
             git commit -m "v${NEW_VERSION} [skip ci]"
-            git push
+            git push origin HEAD:main
           fi
 
           if ! git rev-parse "v${NEW_VERSION}" >/dev/null 2>&1; then
             git tag "v${NEW_VERSION}"
           fi
 
-          git push --tags
+          git push origin --tags

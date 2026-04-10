@@ -28,7 +28,7 @@ The demo imports directly from `../src/`, so source changes appear immediately t
 
 ## Publishing
 
-Publishing is automatic on push to `main`.
+Publishing is automatic after successful `CI` on `main`.
 
 - CI builds and type checks
 - AI classifies the version bump
