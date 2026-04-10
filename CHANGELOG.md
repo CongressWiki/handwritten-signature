@@ -16,6 +16,14 @@ from Git tags and commit history.
 
 ## Unreleased
 
+## [0.12.13] - 2026-04-10
+
+### Changed
+
+- Restore AI package release workflow
+- Inline signature keyframes
+- Remove release details from README
+
 ## [0.12.11] - 2026-04-10
 
 ### Changed
