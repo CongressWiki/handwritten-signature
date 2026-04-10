@@ -12,6 +12,8 @@ Install the published package from npm:
 npm install @congresswiki/handwritten-signature
 ```
 
+Demo: [congresswiki.github.io/handwritten-signature](https://congresswiki.github.io/handwritten-signature/)
+
 ## Usage
 
 ```tsx
@@ -81,13 +83,5 @@ yarn site:build
 ## Publishing
 
 Normal releases publish to npm after successful `CI` on `main` using npm trusted publishing (OIDC). The publish workflow waits for the `CI` workflow to pass, classifies the version bump (patch/minor/major), updates `CHANGELOG.md`, publishes to npm, and commits the release metadata back.
-
-The first npm release is a one-time bootstrap step because npm trusted publishing can only be configured for packages that already exist on the npm registry. Recommended bootstrap sequence:
-
-1. Make the GitHub repository public.
-2. Log in with an npm account that can publish under the `@congresswiki` scope.
-3. Run a one-time manual publish: `npm publish --access public`.
-4. Configure the trusted publisher for `publish.yml` on npm, or run `npm trust github @congresswiki/handwritten-signature --repo CongressWiki/handwritten-signature --file publish.yml`.
-5. After that, all future releases can publish from GitHub Actions via OIDC without npm tokens.
 
 The demo site deployment workflow automatically skips while the repository is private on plans that do not support GitHub Pages for private repositories. Once the repository is public, the same workflow will deploy `site/out/` to GitHub Pages.
