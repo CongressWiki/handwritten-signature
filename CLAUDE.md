@@ -31,7 +31,7 @@ The site imports directly from `../src/` via Turbopack — changes to the compon
 
 Automatic on push to `main`. CI builds, typechecks, uses AI to classify commits as patch/minor/major, updates `CHANGELOG.md`, publishes to GitHub Packages, and commits the release metadata back with a `[skip ci]` tag.
 
-A second workflow (`pages.yml`) deploys `site/out/` to GitHub Pages on push to `main`.
+A second workflow (`pages.yml`) deploys `site/out/` to GitHub Pages on push to `main` once the repository is on a plan/state that supports Pages. While the repository is private on plans without private Pages support, that workflow exits cleanly without attempting a deployment.
 
 ## Architecture
 

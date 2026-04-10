@@ -93,3 +93,5 @@ yarn site:build
 ## Publishing
 
 Automatic on push to `main`. CI builds, typechecks, uses AI to classify the version bump (patch/minor/major), updates `CHANGELOG.md`, publishes to GitHub Packages, and commits the release metadata back.
+
+The demo site deployment workflow automatically skips while the repository is private on plans that do not support GitHub Pages for private repositories. Once the repository is public, the same workflow will deploy `site/out/` to GitHub Pages.

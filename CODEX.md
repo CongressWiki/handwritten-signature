@@ -34,7 +34,7 @@ Publishing is automatic on push to `main`.
 - AI classifies the version bump
 - `CHANGELOG.md` is updated during releases
 - the package is published to GitHub Packages
-- the static demo site is deployed by the Pages workflow
+- the static demo site is deployed by the Pages workflow once GitHub Pages is available for the repository
 
 ## Architecture
 
