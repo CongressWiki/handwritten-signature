@@ -6,7 +6,7 @@ Animated handwriting React component that renders text as cursive SVG stroke pat
 
 ## Install
 
-Install the published package from npm:
+Install from npm:
 
 ```bash
 npm install @congresswiki/handwritten-signature
@@ -79,14 +79,3 @@ yarn site:build
 - [Contributing](./CONTRIBUTING.md)
 - [Code of Conduct](./CODE_OF_CONDUCT.md)
 - [Security Policy](./SECURITY.md)
-
-## Publishing
-
-Normal releases use Changesets plus npm trusted publishing (OIDC).
-
-1. Add a changeset for releasable package changes with `yarn changeset`.
-2. After successful `CI` on `main`, the publish workflow opens or updates a `Version packages` pull request with the version bump and `CHANGELOG.md` update.
-3. Merge that release pull request.
-4. After `CI` passes on the merged release commit, the publish workflow publishes the already-versioned package to npm with provenance and pushes the matching `v*` tag.
-
-The demo site deployment workflow automatically skips while the repository is private on plans that do not support GitHub Pages for private repositories. Once the repository is public, the same workflow will deploy `site/out/` to GitHub Pages.
