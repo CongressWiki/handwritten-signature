@@ -50,7 +50,7 @@ jobs:
         if: steps.freshness.outputs.publishable == 'true'
         run: corepack enable
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         if: steps.freshness.outputs.publishable == 'true'
         with:
           node-version: 22
