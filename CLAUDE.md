@@ -34,6 +34,7 @@ Automatic after successful `CI` on `main` using AI-driven semver classification 
 1. The publish workflow compares the validated commit range against the last release tag.
 2. It asks the AI semver classifier for `patch`, `minor`, or `major`, with a `patch` fallback when the AI key is unavailable.
 3. It updates `package.json` and `CHANGELOG.md`, publishes to npm via OIDC, pushes the release commit back to `main`, and tags the release.
+4. Branch-protected release pushes use the repository secret `RELEASE_PUSH_TOKEN`.
 
 The first public npm release was a one-time manual bootstrap because trusted publishing can only be configured for packages that already exist on the npm registry.
 

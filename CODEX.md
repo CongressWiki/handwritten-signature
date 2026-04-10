@@ -33,6 +33,7 @@ Publishing is automatic after `CI` succeeds on `main`.
 - the publish workflow compares the validated commit against the last release tag
 - it uses the AI semver classifier to choose `patch`, `minor`, or `major`, with a `patch` fallback if the AI key is unavailable
 - it updates `package.json` and `CHANGELOG.md`, publishes to npm via OIDC, pushes the release commit back to `main`, and tags the release
+- branch-protected release pushes use the repository secret `RELEASE_PUSH_TOKEN`
 - the static demo site is deployed by the Pages workflow once GitHub Pages is available for the repository
 
 The first public npm release was a one-time manual bootstrap because trusted publishing can only be attached to packages that already exist on npm.
