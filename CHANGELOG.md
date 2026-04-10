@@ -10,6 +10,12 @@ from Git tags and commit history.
 
 ## Unreleased
 
+## [0.12.9] - 2026-04-10
+
+### Changed
+
+- Skip Pages deploys until repo is public
+
 ## [0.12.8] - 2026-04-10
 
 ### Changed
