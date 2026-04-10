@@ -82,6 +82,11 @@ yarn site:build
 
 ## Publishing
 
-Normal releases publish to npm after successful `CI` on `main` using npm trusted publishing (OIDC). The publish workflow waits for the `CI` workflow to pass, classifies the version bump (patch/minor/major), updates `CHANGELOG.md`, publishes to npm, and commits the release metadata back.
+Normal releases use Changesets plus npm trusted publishing (OIDC).
+
+1. Add a changeset for releasable package changes with `yarn changeset`.
+2. After successful `CI` on `main`, the publish workflow opens or updates a `Version packages` pull request with the version bump and `CHANGELOG.md` update.
+3. Merge that release pull request.
+4. After `CI` passes on the merged release commit, the publish workflow publishes the already-versioned package to npm with provenance and pushes the matching `v*` tag.
 
 The demo site deployment workflow automatically skips while the repository is private on plans that do not support GitHub Pages for private repositories. Once the repository is public, the same workflow will deploy `site/out/` to GitHub Pages.

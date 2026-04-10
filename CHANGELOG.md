@@ -10,6 +10,12 @@ from Git tags and commit history.
 
 ## Unreleased
 
+## [0.12.11] - 2026-04-10
+
+### Changed
+
+- Refresh public package README
+
 ## [0.12.10] - 2026-04-10
 
 ### Changed

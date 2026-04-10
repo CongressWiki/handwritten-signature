@@ -28,15 +28,15 @@ The demo imports directly from `../src/`, so source changes appear immediately t
 
 ## Publishing
 
-Publishing is automatic after successful `CI` on `main` once npm trusted publishing is configured.
+Publishing uses Changesets plus npm trusted publishing.
 
-- CI builds and type checks
-- AI classifies the version bump
-- `CHANGELOG.md` is updated during releases
-- the package is published to npm via OIDC
+- add a changeset with `yarn changeset` for releasable package changes
+- after `CI` passes on `main`, the publish workflow opens or updates a `Version packages` PR
+- merging that PR lands the version bump and `CHANGELOG.md` update on `main`
+- after `CI` passes on the merged release commit, the package is published to npm via OIDC and the matching `v*` tag is pushed
 - the static demo site is deployed by the Pages workflow once GitHub Pages is available for the repository
 
-The first public npm release is a one-time manual bootstrap because trusted publishing can only be attached to packages that already exist on npm.
+The first public npm release was a one-time manual bootstrap because trusted publishing can only be attached to packages that already exist on npm.
 
 ## Architecture
 

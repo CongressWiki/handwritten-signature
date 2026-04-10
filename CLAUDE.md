@@ -29,9 +29,14 @@ The site imports directly from `../src/` via Turbopack — changes to the compon
 
 ## Publishing
 
-Automatic after successful `CI` on `main` once npm trusted publishing is configured. The release workflow waits for the `CI` workflow to pass, then classifies commits as patch/minor/major, updates `CHANGELOG.md`, publishes to npm via OIDC, and commits the release metadata back with a `[skip ci]` tag.
+Automatic after successful `CI` on `main` using a Changesets release PR plus npm trusted publishing.
 
-The first public npm release is a one-time manual bootstrap because trusted publishing can only be configured for packages that already exist on the npm registry.
+1. Add a changeset with `yarn changeset` for releasable package changes.
+2. After `CI` passes on `main`, the publish workflow opens or updates a `Version packages` PR.
+3. Merging that PR lands the version bump and `CHANGELOG.md` update on `main`.
+4. After `CI` passes on the merged release commit, the package is published to npm via OIDC and the matching `v*` tag is pushed.
+
+The first public npm release was a one-time manual bootstrap because trusted publishing can only be configured for packages that already exist on the npm registry.
 
 A second workflow (`pages.yml`) deploys `site/out/` to GitHub Pages on push to `main` once the repository is on a plan/state that supports Pages. While the repository is private on plans without private Pages support, that workflow exits cleanly without attempting a deployment.
 
