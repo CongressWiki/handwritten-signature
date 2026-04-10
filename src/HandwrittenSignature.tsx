@@ -1,7 +1,7 @@
-import { useInsertionEffect, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 import type { HandwrittenSignatureProps } from './types';
 import { SIGNATURE_GLYPHS } from './glyphs';
-import { acquireSignatureStyles, releaseSignatureStyles } from './styles';
+import { SIGNATURE_CSS } from './styles';
 import {
   CODEPEN_BASE_LETTER_HEIGHT,
   DEFAULT_INITIAL_DELAY_MS,
@@ -306,13 +306,6 @@ const HandwrittenSignature = ({
   style,
   ...delegated
 }: HandwrittenSignatureProps) => {
-  useInsertionEffect(() => {
-    acquireSignatureStyles();
-    return () => {
-      releaseSignatureStyles();
-    };
-  }, []);
-
   const glyphElements = buildGlyphElements({
     text,
     letterSpacing,
@@ -342,6 +335,7 @@ const HandwrittenSignature = ({
       style={mergedStyle}
       {...delegated}
     >
+      <style data-hws-styles>{SIGNATURE_CSS}</style>
       {glyphElements}
     </div>
   );

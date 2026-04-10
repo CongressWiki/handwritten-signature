@@ -58,9 +58,9 @@ Single React component (`HandwrittenSignature`) with four entry points:
 1. `HandwrittenSignature` takes a `text` prop, splits into characters, looks up each in `SIGNATURE_GLYPHS`
 2. Each glyph has SVG `path`/`paths` data and `viewBox` dimensions. Multi-stroke glyphs (F, I, T, X, f, t, x) use `paths[]` for sequential stroke animation
 3. Layout configs in `layout.ts` define per-character `marginLeft`, `marginRight`, `baselineShift`, and `dashLength`/`dashLengths` (measured via `getTotalLength()` + 30% padding)
-4. Animation uses CSS `stroke-dashoffset` with per-path CSS custom properties (`--hws-dur`, `--hws-delay`, `--hws-dash-length`)
+4. Animation uses CSS `stroke-dashoffset` with per-path CSS custom properties (`--hws-dash-length`, `--hws-easing`, `--hws-play`)
 5. The `easing` prop sets `--hws-easing` CSS variable on the container (default: `cubic-bezier(0.33, 1, 0.68, 1)`)
-6. Shared keyframe styles are installed once per document and removed after the last mounted component unmounts
+6. Shared keyframe styles are rendered inline with each component instance, so consumers do not need a separate stylesheet import
 
 ### Realism Props
 
@@ -82,7 +82,7 @@ Single React component (`HandwrittenSignature`) with four entry points:
 
 ### Styles (`styles.ts`)
 
-Contains the shared stylesheet helpers and keyframe animation `hws-letter-stroke`. The `--hws-play` CSS variable still allows external control of animation play state from the demo site's `useAnimationControl` hook via the Web Animations API.
+Contains the shared `hws-letter-stroke` keyframe string that the component renders inline. Runtime timing, dash lengths, easing, and play-state still come from inline styles and CSS variables on the rendered SVG paths.
 
 ### Demo Site (`site/`)
 

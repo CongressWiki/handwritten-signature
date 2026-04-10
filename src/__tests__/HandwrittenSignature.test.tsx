@@ -2,7 +2,6 @@ import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import HandwrittenSignature from '../HandwrittenSignature';
 import { CODEPEN_BASE_LETTER_HEIGHT, FALLBACK_TEXT } from '../layout';
-import { STYLE_ID } from '../styles';
 
 const getPaths = (container: HTMLElement): SVGPathElement[] =>
   Array.from(container.querySelectorAll('path.hws-path'));
@@ -119,16 +118,13 @@ describe('HandwrittenSignature', () => {
     expect(variedStrokeWidths).not.toEqual(baselineStrokeWidths);
   });
 
-  it('injects a single shared keyframe stylesheet and removes it after the last unmount', () => {
+  it('does not mutate document head while rendering', () => {
     const first = render(<HandwrittenSignature text="A" />);
     const second = render(<HandwrittenSignature text="B" />);
 
-    expect(document.head.querySelectorAll(`#${STYLE_ID}`)).toHaveLength(1);
-
-    first.unmount();
-    expect(document.head.querySelectorAll(`#${STYLE_ID}`)).toHaveLength(1);
-
-    second.unmount();
-    expect(document.head.querySelectorAll(`#${STYLE_ID}`)).toHaveLength(0);
+    expect(document.head.querySelector('#hws-styles')).toBeNull();
+    expect(document.head.querySelector('[data-hws-managed]')).toBeNull();
+    expect(first.container.querySelectorAll('style[data-hws-styles]')).toHaveLength(1);
+    expect(second.container.querySelectorAll('style[data-hws-styles]')).toHaveLength(1);
   });
 });

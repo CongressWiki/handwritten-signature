@@ -54,7 +54,7 @@ Multi-stroke letters (F, I, T, X, f, t, x) animate each stroke sequentially.
 
 ## Styling
 
-The component inherits `color` from its parent for stroke color. Animation is CSS-based using `stroke-dashoffset`. Pause animation with:
+The component includes its own keyframes. It inherits `color` from its parent for stroke color. Animation is CSS-based using `stroke-dashoffset`. Pause animation with:
 
 ```css
 .hws-signature {

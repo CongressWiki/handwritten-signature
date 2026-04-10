@@ -55,7 +55,7 @@ Entry points:
 2. glyph data comes from `SIGNATURE_GLYPHS`
 3. layout data comes from `layout.ts`
 4. stroke animation is driven by `stroke-dashoffset` and inline CSS custom properties
-5. shared keyframe styles are installed once per document and removed after the last component unmounts
+5. shared keyframe styles are rendered inline with each component instance instead of being injected into `document.head`
 
 Multi-stroke letters use `paths[]` so strokes animate in order.
 
