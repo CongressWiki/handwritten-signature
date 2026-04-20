@@ -34,7 +34,7 @@ jobs:
     if: ${{ needs.pages-availability.outputs.pages_supported == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Enable Corepack (Yarn 4)
         run: corepack enable
