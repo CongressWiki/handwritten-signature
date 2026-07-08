@@ -50,7 +50,7 @@ jobs:
         working-directory: site
         run: yarn install --immutable
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
 
       - name: Build static site
         working-directory: site
