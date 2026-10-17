@@ -226,8 +226,7 @@ const buildGlyphElements = ({
             animationDirection: 'reverse',
             animationFillMode: 'both',
             animationIterationCount: 1,
-            animationPlayState:
-              'var(--hws-play, running)' as CSSProperties['animationPlayState'],
+            animationPlayState: 'var(--hws-play, running)',
             willChange: 'stroke-dashoffset, stroke-opacity',
             '--hws-dash-length': dashLengthString,
           } as CSSProperties}
