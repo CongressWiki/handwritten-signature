@@ -16,6 +16,17 @@ from Git tags and commit history.
 
 ## Unreleased
 
+## [0.12.16] - 2026-10-18
+
+### Changed
+
+- chore(deps): upgrade dependencies
+- Upgrade dependencies
+
+### Fixed
+
+- fix(lint): run eslint-plugin-react under ESLint 10 (#20)
+
 ## [0.12.15] - 2026-04-10
 
 ### Added
